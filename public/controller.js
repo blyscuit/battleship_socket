@@ -137,30 +137,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
           $scope.onDropPlace = function($event,$data,i,j,menArray){
             // console.log($data+" "+a);
             var ship = $data;
-            if(ship.layout=="ver"){
-              if(i>$scope.maxSea-(ship.length)){
-                menArray.push(ship);
-                return;
-              }
-            }else{
-              if(j>$scope.maxSea-(ship.length)){
-                menArray.push(ship);
-                return;
-              }
-            }
-            for(var a = 0;a<ship.length;a++){
-              if(ship.layout=="ver"){
-                if($scope.sea[j][i+a].length != 0){
-                  menArray.push(ship);
-                  return;
-                }
-              }else{
-                if($scope.sea[j+a][i].length != 0){
-                  menArray.push(ship);
-                  return;
-                }
-              }
-            }
+
             for(var a = 0;a<ship.length;a++){
               if(ship.layout=="ver"){
                 $scope.sea[j][i+a] = ship;
@@ -172,7 +149,34 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
           };
 
 console.log("wait room");
-
+$scope.dropValidateSpace = function($data,i,j) {
+  var ship = $data
+  if(ship.layout=="ver"){
+    if(i>$scope.maxSea-(ship.length)){
+      menArray.push(ship);
+      return false;
+    }
+  }else{
+    if(j>$scope.maxSea-(ship.length)){
+      menArray.push(ship);
+      return false;
+    }
+  }
+  for(var a = 0;a<ship.length;a++){
+    if(ship.layout=="ver"){
+      if($scope.sea[j][i+a].length != 0){
+        menArray.push(ship);
+        return false;
+      }
+    }else{
+      if($scope.sea[j+a][i].length != 0){
+        menArray.push(ship);
+        return false;
+      }
+    }
+  }
+  return true;
+  };
     $scope.turnShip = function(ship){
       if(ship.layout == "hor"){
         ship.layout = "ver";

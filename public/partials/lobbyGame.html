@@ -18,7 +18,7 @@
                               <div class="col-xs-1">
                       <ul>
                     <li ng-repeat="ship in a track by $index">
-                        <span ui-on-Drop="onDropPlace($event,$data,$index,$parent.$index,men)">
+                        <span ui-on-Drop="onDropPlace($event,$data,$index,$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$index)">
                             {{ship.length}}<span>
                     </li>
                   </ul>
