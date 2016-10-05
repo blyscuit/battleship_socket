@@ -1,0 +1,33 @@
+<div class="container text-center padding80 border-top" id="1">
+  <h2 class="uppercase">Box.BattleShip()</h2>
+    <li><a ng-click="playButton()">Play</a></li>
+
+    <div class="row">
+            <div class="col-xs-3">
+                <ul ui-on-Drop="onDrop($event,$data,men)">
+                    <li ui-draggable="true" drag="man"
+                    on-drop-success="dropSuccessHandler($event,$index,men)"
+                    ng-repeat="ship in men track by $index">
+                        <span ng-click="turnShip(ship)">{{ship.length + ship.layout}}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-xs-9">
+                <ul>
+                    <li ng-repeat="a in sea track by $index">
+
+                              <div class="col-xs-1">
+                      <ul>
+                    <li ng-repeat="ship in a track by $index">
+                        <span ui-on-Drop="onDropPlace($event,$data,$index,$parent.$index)">
+                            {{ship}}<span>
+                    </li>
+                  </ul>
+                </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+</div>
