@@ -105,12 +105,12 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 
 });
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) {
-
+    $scope.maxSea = 8
     $scope.sea = [];
-    for(var i = 0; i<8;i++){
+    for(var i = 0; i<$scope.maxSea;i++){
       var a = [];
-      for(var j = 0; j<8;j++){
-        a.push("a");
+      for(var j = 0; j<$scope.maxSea;j++){
+        a.push({"length":0,"layout":"hor"});
       }
       $scope.sea.push(a);
     }
@@ -134,18 +134,41 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
           $scope.onDrop = function($event,$data,array){
               array.push($data);
           };
-          $scope.onDropPlace = function($event,$data,i,j){
+          $scope.onDropPlace = function($event,$data,i,j,menArray){
             // console.log($data+" "+a);
             var ship = $data;
-            console.log(ship + $data);
-            for(var a = 0;a<ship.length;a++){
-              if($data.layout=="hor"){
-                $scope.sea[j][i+a] = ship.length;
-              }else{
-                $scope.sea[j+a][i] = ship.length;
+            if(ship.layout=="ver"){
+              if(i>$scope.maxSea-(ship.length)){
+                menArray.push(ship);
+                return;
+              }
+            }else{
+              if(j>$scope.maxSea-(ship.length)){
+                menArray.push(ship);
+                return;
               }
             }
-            $scope.sea[j][i] = $data;
+            for(var a = 0;a<ship.length;a++){
+              if(ship.layout=="ver"){
+                if($scope.sea[j][i+a].length != 0){
+                  menArray.push(ship);
+                  return;
+                }
+              }else{
+                if($scope.sea[j+a][i].length != 0){
+                  menArray.push(ship);
+                  return;
+                }
+              }
+            }
+            for(var a = 0;a<ship.length;a++){
+              if(ship.layout=="ver"){
+                $scope.sea[j][i+a] = ship;
+              }else{
+                $scope.sea[j+a][i] = ship;
+              }
+            }
+            console.log($scope.sea);
           };
 
 console.log("wait room");
