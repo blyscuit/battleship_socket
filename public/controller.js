@@ -134,15 +134,17 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
           $scope.onDrop = function($event,$data,array){
               array.push($data);
           };
-          $scope.onDropPlace = function($event,$data,i,j,menArray){
+          $scope.onDropPlace = function($event,$data,j,i,menArray){
             // console.log($data+" "+a);
             var ship = $data;
 
             for(var a = 0;a<ship.length;a++){
               if(ship.layout=="ver"){
-                $scope.sea[j][i+a] = ship;
+                console.log(i+","+(j+a));
+                $scope.sea[i][j+a] = ship;
               }else{
-                $scope.sea[j+a][i] = ship;
+                console.log((i+a)+","+j);
+                $scope.sea[i+a][j] = ship;
               }
             }
             console.log($scope.sea);
@@ -153,24 +155,24 @@ $scope.dropValidateSpace = function($data,i,j) {
   var ship = $data
   if(ship.layout=="ver"){
     if(i>$scope.maxSea-(ship.length)){
-      menArray.push(ship);
+      // $scope.men.push(ship);
       return false;
     }
   }else{
     if(j>$scope.maxSea-(ship.length)){
-      menArray.push(ship);
+      // $scope.men.push(ship);
       return false;
     }
   }
   for(var a = 0;a<ship.length;a++){
     if(ship.layout=="ver"){
       if($scope.sea[j][i+a].length != 0){
-        menArray.push(ship);
+        // $scope.men.push(ship);
         return false;
       }
     }else{
       if($scope.sea[j+a][i].length != 0){
-        menArray.push(ship);
+        // $scope.men.push(ship);
         return false;
       }
     }
@@ -183,11 +185,22 @@ $scope.dropValidateSpace = function($data,i,j) {
       }else{
         ship.layout = "hor"
       }
-    }
+    };
 
     $scope.playButton = function() {
       socket.emit('sendchat', $scope.currentCustomer);
       $state.go('gameWait',{});
+    };
+    $scope.removeShip = function(ship){
+      for(var i = 0; i<$scope.maxSea;i++){
+        var a = [];
+        for(var j = 0; j<$scope.maxSea;j++){
+          if($scope.sea[i][j]==ship){
+          $scope.sea[i][j]={"length":0,"layout":"hor"};
+        }
+        }
+      }
+      $scope.men.push(ship);
     };
   socket.on('updatechat', function(data,datadata) {
     $scope.$apply(function () {

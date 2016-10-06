@@ -4,7 +4,7 @@
 
     <div class="row">
             <div class="col-xs-3">
-                <ul ui-on-Drop="onDrop($event,$data,men)">
+                <ul>
                     <li
                     ng-repeat="ship in men track by $index" >
                     <div class="dragShip" ng-if="ship.layout == 'ver'" style="width:50px; height:{{ship.length*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
@@ -20,8 +20,10 @@
                               <div class="sea col-xs-1">
                       <ul>
                     <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
-                        <div style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$index)">
-                            {{ship.length}}<div>
+                        <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+                            {{ship.length}}</div>
+                        <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                            {{ship.length}}</div>
                     </li>
                   </ul>
                 </div>
