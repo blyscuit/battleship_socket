@@ -211,7 +211,7 @@ $scope.dropValidateSpace = function($data,i,j) {
 });
 
 simpleControllers.controller('LandingCtrl', function($state,$scope, socket) {
-
+    //Game start here
     $scope.playButton = function() {
       socket.emit('sendchat', $scope.currentCustomer);
       $state.go('gameWait',{});

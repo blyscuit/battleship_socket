@@ -28,12 +28,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
       .state('lobby', {
             url: '/',
         templateUrl: '/partials/lobbyGame.html',
-        // controller: 'LandingCtrl'
-        controller: 'GamePrepareCtrl'
+        controller: 'LandingCtrl'
+        // controller: 'GamePrepareCtrl'
       })
       .state('game.prepare', {
             url: '/game/:room/+',
-        templateUrl: '/partials/game.html',
+        templateUrl: '/partials/gamePrepare.html',
         controller: 'GamePrepareCtrl',
         params:{myParam: null}
       })
