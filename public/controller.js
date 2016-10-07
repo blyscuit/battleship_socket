@@ -216,6 +216,7 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket) {
       socket.emit('sendchat', $scope.currentCustomer);
       $state.go('gameWait',{});
     };
+    $scope.online = 0;
   socket.on('updatechat', function(data,datadata) {
     $scope.$apply(function () {
       // $scope.newCustomers.push(datadata);
