@@ -59,7 +59,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope, so
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope, socket) {
 
-  $scope.roomName  = ""//$stateParams.room;
+  $scope.username  = $stateParams.myParam.username;
 
   $scope.newCustomers = [];
   $scope.currentCustomer = {};
@@ -67,7 +67,8 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
   // if(!$stateParams.myParam){
   //   $state.go("lobby");
   // }
-
+    // alert($stateParams.myParam.username);
+    // socket.emit('joinGame',$scope.username);
     socket.emit('joinGame');
 
   if($stateParams.myParam){
@@ -107,7 +108,7 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
   });
 
 
-  socket.on('playerJoined',function(hi){
+  socket.on('startGame',function(name){
     $state.go('gamePrepare',{});
   });
 
@@ -149,6 +150,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
     array.push($data);
   };
   $scope.onDropPlace = function($event,$data,j,i,menArray){
+
     // console.log($data+" "+a);
     var ship = $data;
 
@@ -200,11 +202,6 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
       ship.layout = "hor"
     }
   };
-
-  $scope.playButton = function() {
-    $state.go('gameWait',{});
-    socket.emit('sendchat', $scope.currentCustomer);
-  };
   $scope.removeShip = function(ship){
     for(var i = 0; i<$scope.maxSea;i++){
       var a = [];
@@ -216,6 +213,14 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) 
     }
     $scope.men.push(ship);
   };
+
+  $scope.submitButton = function(){
+    if($scope.men.length>0){
+      alert("Please put down all the ships");
+    }else{
+      //send ship via socket
+    }
+  }
   socket.on('updatechat', function(data,datadata) {
     $scope.$apply(function () {
       // $scope.newCustomers.push(datadata);
@@ -231,7 +236,7 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket) {
 
   //Game start here
   $scope.playButton = function() {
-  $state.go('gameWait',{});
+  $state.go('gameWait',{ myParam:{username:$scope.username}});
   };
   $scope.online = 0;
   socket.on('updatechat', function(data,datadata) {
