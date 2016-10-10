@@ -42,6 +42,8 @@ var Game = function(io){
 
     if(playerCount === 2){
       io.to(gameId).emit('playerJoined','hi');
+      //when this emit, people goes to next page, selection page
+
       myTimer.start(20); //start timer for 10 sec;
     }
   }

@@ -59,7 +59,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope, so
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope, socket) {
 
-  $scope.roomName  = $stateParams.room;
+  $scope.roomName  = ""//$stateParams.room;
 
   $scope.newCustomers = [];
   $scope.currentCustomer = {};
@@ -69,7 +69,7 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
   // }
 
     socket.emit('joinGame');
-    
+
   if($stateParams.myParam){
     socket.emit('checkPlayerInRoom',$stateParams.myParam['username'],$stateParams.room);
   }
@@ -113,6 +113,12 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 
 });
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) {
+
+    $scope.gameTime = ""+0;
+    socket.on('timer',function(data){
+      $scope.gameTime = ""+ Math.floor(data.time/1000);
+    });
+
   $scope.maxSea = 8
   $scope.sea = [];
   for(var i = 0; i<$scope.maxSea;i++){
