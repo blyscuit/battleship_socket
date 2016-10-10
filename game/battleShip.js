@@ -36,10 +36,6 @@ var Game = function(io){
       myTimer.start(10); //start timer for 10 sec;
     });
 
-    socket.on('playerQuit',function(){
-      console.log('someone quit');
-    })
-
     if(playerCount === 2){
       myTimer.start(20); //start timer for 10 sec;
     }
