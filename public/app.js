@@ -31,8 +31,8 @@ app.config(['$stateProvider', '$urlRouterProvider',
         controller: 'LandingCtrl'
         // controller: 'GamePrepareCtrl'
       })
-      .state('game.prepare', {
-            url: '/game/:room/+',
+      .state('gamePrepare', {
+            // url: '/game/:room/+',
         templateUrl: '/partials/gamePrepare.html',
         controller: 'GamePrepareCtrl',
         params:{myParam: null}
@@ -50,7 +50,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
         params:{myParam: null}
       })
       .state('gameWait', {
-            url: '/game/:room',
+            // url: '/game/:room',
         templateUrl: '/partials/game.waiting.html',
         controller: 'GameWaitCtrl',
         params:{myParam: null}
