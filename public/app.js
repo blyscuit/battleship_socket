@@ -31,7 +31,7 @@ app.config(['$stateProvider', '$urlRouterProvider',
         controller: 'LandingCtrl'
         // controller: 'GamePrepareCtrl'
       })
-      .state('game.prepare', {
+      .state('gamePrepare', {
             url: '/game/:room/+',
         templateUrl: '/partials/gamePrepare.html',
         controller: 'GamePrepareCtrl',

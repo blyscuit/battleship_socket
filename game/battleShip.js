@@ -19,7 +19,7 @@ var Game = function(io){
   function join(socket){
     socket.join(gameId);
     playerCount++;
-    socket.broadcast.to(gameId).emit('playerJoined','hi');
+    // socket.broadcast.to(gameId).emit('playerJoined','hi');
     console.log('joiningGame');
 
     socket.on('disconnect',function(){
@@ -41,6 +41,7 @@ var Game = function(io){
     })
 
     if(playerCount === 2){
+      io.to(gameId).emit('playerJoined','hi');
       myTimer.start(20); //start timer for 10 sec;
     }
   }
