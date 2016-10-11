@@ -49,7 +49,6 @@ var Game = function(io){
       console.log('joiningGame');
 
       socket.on('submitPlan',function(atLocationArray){
-
         if(socket.id == hostId){
           for (var i = 0; i < atLocationArray.length; i++) {
             var num = atLocationArray[i]
@@ -57,7 +56,6 @@ var Game = function(io){
             var column = Math.floor((num%100)/10);
             var shipNum = Math.floor(num%10);
             sea[0][row][column] = shipNum;
-            console.log(sea[0][row][column]);
           }
         }else{
           for (var i = 0; i < atLocationArray.length; i++) {
@@ -66,11 +64,9 @@ var Game = function(io){
             var column = Math.floor((num%100)/10);
             var shipNum = Math.floor(num%10);
             sea[1][row][column] = shipNum;
-            console.log(sea[1][row][column]);
           }
         }
-
-
+        io.to(socket.id).emit('receivedPlan');
         playerSubmit++;
         if(playerSubmit===maxPlayer){
           io.to(gameId).emit('gameReady');

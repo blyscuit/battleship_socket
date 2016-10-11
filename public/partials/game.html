@@ -1,25 +1,42 @@
+<div class="container text-center padding80 border-top" id="1">
+  <h2 class="uppercase">Box.BattleShip()</h2>
+  <h3>Opponent : {{opponent}}</h3>
+  <div class="row">
+    <div class="col-xs-6 sea">
+      <ul class="seaBox">
+        <li ng-repeat="a in sea track by $index">
 
-<div id="gameView">
-  <div>
-    <div class="container text-center padding30 border-top" id="1">
-      <div class="col-md-8" ng-show="activePlayer">
+          <div class="sea col-xs-1">
+            <ul>
+              <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
+                <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+                  {{ship.length}}</div>
+                  <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                    {{ship.length}}</div>
+                  </li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <div class="col-xs-6 sea">
+          <ul class="seaBox">
+            <li ng-repeat="a in oppSea track by $index">
 
-        <ul class="filter" data-option-key="filter">
-          <li><a ng-click="gameAction('rock')" id="a" value="rock">rock</a></li>
-          <li><a ng-click="gameAction('paper')" id="b" value="paper">paper</a></li>
-          <li><a ng-click="gameAction('scissors')" id="c" value="scissors">scissors</a></li>
-          <!-- <li><a ng-click="gameAction('rock')" id="a" value="rock">rock</a></li> -->
-          <!-- <li><a href="#" data-option-value=".web-design">Web Design</a></li>
-          <li><a href="#" data-option-value=".print">Print</a></li> -->
-        </ul>
-      </div>
-      <div id="chatView" class="game-chat-box col-md-4">
-        <ul>
-          <li class="clean" ng-repeat="customer in newCustomers track by $index">{{customer}}</li>
-        </ul>
+              <div class="sea col-xs-1">
+                <ul>
+                  <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
+                    <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+                      {{ship.length}}</div>
+                      <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                        {{ship.length}}</div>
+                      </li>
+                    </ul>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
 
-      </div>
 
-    </div>
-  </div>
-</div>
+        </div>

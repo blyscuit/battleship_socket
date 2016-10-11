@@ -12,7 +12,19 @@ simpleControllers.controller('LobbyCtrl', function($state,$scope, socket) {
   });
 });
 
-simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope, socket) {
+simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket) {
+  $scope.opponent = $rootScope.opponent;
+  $scope.sea = $stateParams.myParam.sea;
+  $scope.maxSea = $stateParams.myParam.maxSea;
+
+  $scope.oppSea = [];
+  for(var i = 0; i<$scope.maxSea;i++){
+    var a = [];
+    for(var j = 0; j<$scope.maxSea;j++){
+      a.push({"length":0,"layout":"hor"});
+    }
+    $scope.oppSea.push(a);
+  }
 
 });
 
@@ -66,16 +78,13 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   ];
 
   $scope.addText = "";
-
+  $scope.send = false;
 
   $scope.dropSuccessHandler = function($event,index,array){
     array.splice(index,1);
   };
-
-  $scope.onDrop = function($event,$data,array){
-    array.push($data);
-  };
   $scope.onDropPlace = function($event,$data,j,i,menArray){
+    if($scope.send == true)return;
 
     // console.log($data+" "+a);
     var ship = $data;
@@ -94,6 +103,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 
   console.log("wait room");
   $scope.dropValidateSpace = function($data,i,j) {
+    if($scope.send == true)return;
     var ship = $data
     if(ship.layout=="ver"){
       if(i>$scope.maxSea-(ship.length)){
@@ -122,6 +132,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     return true;
   };
   $scope.turnShip = function(ship){
+    if($scope.send == true)return;
     if(ship.layout == "hor"){
       ship.layout = "ver";
     }else{
@@ -129,6 +140,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     }
   };
   $scope.removeShip = function(ship){
+    if($scope.send == true)return;
     for(var i = 0; i<$scope.maxSea;i++){
       var a = [];
       for(var j = 0; j<$scope.maxSea;j++){
@@ -141,7 +153,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   };
 
   $scope.submitButton = function(){
-    if($scope.men.length>0){
+    if($scope.men.length>0||$scope.send == true){
       alert("Please put down all the ships");
     }else{
       //send ship via socket
@@ -158,10 +170,11 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       socket.emit('submitPlan',a);
     }
   }
-
+  socket.on('receivedPlan',function(){
+    $scope.send = true;
+  });
   socket.on('gameReady', function() {
-    $state.go('gameTurn',{});
-
+    $state.go('gameTurn',{ myParam:{sea:$scope.sea,maxSea:$scope.maxSea}});
   });
 
   socket.on('updatechat', function(data,datadata) {
