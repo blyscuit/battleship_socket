@@ -17,6 +17,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
 
+  $scope.score = 0;
+  $scope.OppScore = 0;
+
   $scope.oppSea = [];
   for(var i = 0; i<$scope.maxSea;i++){
     var a = [];

@@ -1,6 +1,13 @@
 <div class="container text-center padding80 border-top" id="1">
   <h2 class="uppercase">Box.BattleShip()</h2>
-  <h3>Opponent : {{opponent}}</h3>
+  <div class="row">
+    <div class="col-xs-6 sea">
+      <h3>You : {{score}}</h3>
+    </div>
+    <div class="col-xs-6 sea">
+      <h3>{{opponent}} : {{OppScore}}</h3>
+    </div>
+  </div>
   <div class="row">
     <div class="col-xs-6 sea">
       <ul class="seaBox">
@@ -9,9 +16,9 @@
           <div class="sea col-xs-1">
             <ul>
               <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
-                <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+                <div ng-if="ship.length > 0" style="height:45px;">
                   {{ship.length}}</div>
-                  <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                  <div ng-if="ship.length == 0" style="height:45px;">
                     {{ship.length}}</div>
                   </li>
                 </ul>
