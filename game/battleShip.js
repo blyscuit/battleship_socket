@@ -11,16 +11,20 @@ var Game = function(io){
   var joinId = 0;
   var inProgress = false;
   var sea = [];
-  var sea1 = []
   var maxPlayer = 2;
-  for (var i = 0; i < maxPlayer; i++) {
-    for(var i = 0; i<maxSea;i++){
-      var a = [];
-      for(var j = 0; j<maxSea;j++){
-        a.push(0);
-      }
-      sea1.push(a);
+
+
+
+  var sea1 = []
+  for(var i = 0; i<maxSea;i++){
+    var a = [];
+    for(var j = 0; j<maxSea;j++){
+      a.push({ship:0});
     }
+    sea1.push(a);
+  }
+  for (var i = 0; i < maxPlayer; i++) {
+    sea.push(sea1);
   }
 
   var myTimer = new Timer({
@@ -40,6 +44,20 @@ var Game = function(io){
       playerCount++;
       // socket.broadcast.to(gameId).emit('playerJoined','hi');
       console.log('joiningGame');
+
+      socket.on('submitPlan',function(atLocationArray,playerNumber){
+
+        if(playerNumber == 0){
+
+        }
+
+        for (var i = 0; i < atLocationArray.length; i++) {
+          var row = atLocationArray[i].row;
+          var column = atLocationArray[i].column;
+          var shipNum = atLocationArray[i].ship;
+          sea[row][column] = {ship:shipNum};
+        }
+      });
 
       socket.on('disconnect',function(){
         playerCount--;
@@ -65,7 +83,7 @@ var Game = function(io){
 
       socket.on('playerQuit',function(){
         console.log('someone quit');
-      })
+      });
 
       if(playerCount === 2){
         joinName = playerName;
