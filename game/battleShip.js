@@ -94,8 +94,10 @@ var Game = function(io){
       if(playerCount === 2){
         joinName = playerName;
         joinId = socket.id;
-        io.to(hostId).emit('startGame',joinName);
-        io.to(joinId).emit('startGame',hostName);
+        // io.to(hostId).emit('startGame',joinName);
+        // io.to(joinId).emit('startGame',hostName);
+        io.to(hostId).emit('startGame',"playing VS join");
+        io.to(joinId).emit('startGame',"playing vs Host");
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;

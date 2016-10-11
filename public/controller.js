@@ -57,7 +57,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope, so
   // });
 });
 
-simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope, socket) {
+simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket) {
 
   $scope.username  = $stateParams.myParam.username;
 
@@ -109,12 +109,14 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 
 
   socket.on('startGame',function(name){
+    $rootScope.opponent = name;
     $state.go('gamePrepare',{});
   });
 
 });
-simpleControllers.controller('GamePrepareCtrl', function($state,$scope, socket) {
-
+simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
+    $scope.opponent = $rootScope.opponent;
+    console.log($rootScope.opponent);
     $scope.gameTime = ""+0;
     socket.on('timer',function(data){
       $scope.gameTime = ""+ Math.floor(data.time/1000);
