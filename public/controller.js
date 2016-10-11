@@ -25,7 +25,11 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
   // }
     // alert($stateParams.myParam.username);
     // socket.emit('joinGame',$scope.username);
-    socket.emit('joinGame');
+    socket.emit('joinGame',$stateParams.myParam.username);
+
+  if($stateParams.myParam){
+    socket.emit('checkPlayerInRoom',$stateParams.myParam['username'],$stateParams.room);
+  }
 
 
   socket.on('startGame',function(name){

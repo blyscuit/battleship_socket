@@ -15,6 +15,7 @@ var Game = function(io){
   var playerSubmit = 0;
   var shot = [];
 
+  var boardStatus;
 
 
   for (var k = 0; k < maxPlayer; k++) {
@@ -84,11 +85,13 @@ var Game = function(io){
       socket.on('submitMove',function(move){
         if(socket.id == hostId){
           console.log('%s submit move',hostName);
-          io.to(hostId).emit('result')
+          io.to(hostId).emit('result');
           io.to(joinId).emit('update map');
         }
         if(socket.id == joinId){
           console.log('%s submit move',joinName);
+          io.to(joinId).emit('result');
+          io.to(hostId).emit('update map');
         }
         socket.broadcast.to(gameId).emit(move);
       });
@@ -105,16 +108,18 @@ var Game = function(io){
       if(playerCount === 2){
         joinName = playerName;
         joinId = socket.id;
-        // io.to(hostId).emit('startGame',joinName);
-        // io.to(joinId).emit('startGame',hostName);
-        io.to(hostId).emit('startGame',"playing VS join");
-        io.to(joinId).emit('startGame',"playing vs Host");
+        console.log("joining : %s : %s",joinId,playerName);
+        io.to(hostId).emit('startGame',joinName);
+        io.to(joinId).emit('startGame',hostName);
+        // io.to(hostId).emit('startGame',"playing VS join");
+        // io.to(joinId).emit('startGame',"playing vs Host");
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;
       }else{
         hostName = playerName;
         hostId = socket.id;
+        console.log("joining : %s : %s",hostId,playerName);
       }
     }
 
