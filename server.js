@@ -41,23 +41,23 @@ io.on('connection',function(socket){
   io.emit('connected', { numUsers: ++numConnections });
   console.log('a user connected');
 
-  socket.on('joinGame',function(){
+  socket.on('joinGame',function(playerName){
     if(gameRooms.length === 0){
       gameRooms.push(new Game(io));
-      gameRooms[0].join(socket);
+      gameRooms[0].join(socket,playerName);
     }else{
       var needNewRoom = true;
       for(var i=0; i< gameRooms.length;i++){
         var game = gameRooms[i];
         if(!game.isFull()){
-          game.join(socket);
+          game.join(socket,playerName);
           needNewRoom = false;
           break;
         }
       }
       if(needNewRoom){
         gameRooms.push(new Game(io));
-        gameRooms[gameRooms.length-1].join(socket);
+        gameRooms[gameRooms.length-1].join(socket,playerName);
       }
     }
   });

@@ -5,6 +5,11 @@ var Game = function(io){
   var playerCount = 0;
   var gameId = uuid.v4();
   var maxSea = 8;
+  var hostName = "player1";
+  var hostId = 0;
+  var joinName = "player2";
+  var joinId = 0;
+  var inProgress = false;
   var sea = [];
   var sea1 = []
   var maxPlayer = 2;
@@ -30,7 +35,7 @@ var Game = function(io){
     });
 
 
-    function join(socket){
+    function join(socket,playerName){
       socket.join(gameId);
       playerCount++;
       // socket.broadcast.to(gameId).emit('playerJoined','hi');
@@ -42,6 +47,14 @@ var Game = function(io){
       });
 
       socket.on('submitMove',function(move){
+        if(socket.id == hostId){
+          console.log('%s submit move',hostName);
+          io.to(hostId).emit('result')
+          io.to(joinId).emit('update map');
+        }
+        if(socket.id == joinId){
+          console.log('%s submit move',joinName);
+        }
         socket.broadcast.to(gameId).emit(move);
       });
 
@@ -55,17 +68,23 @@ var Game = function(io){
       })
 
       if(playerCount === 2){
-        io.to(gameId).emit('playerJoined','hi');
+        joinName = playerName;
+        joinId = socket.id;
+        io.to(hostId).emit('startGame',joinName);
+        io.to(joinId).emit('startGame',hostName);
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;
+      }else{
+        hostName = playerName;
+        hostId = socket.id;
       }
     }
 
     /** Expose public methods */
     this.getGameID = function () { return gameId; };
-    this.join = function (socket) { join(socket); };
-    this.isFull = function () { return playerCount === 2; };
+    this.join = function (socket,playerName) { join(socket,playerName); };
+    this.isFull = function () { if(inProgress)return true;return playerCount === 2; };
 
   };
 
