@@ -12,18 +12,20 @@ var Game = function(io){
   var inProgress = false;
   var sea = [];
   var maxPlayer = 2;
-
+  var playerSubmit = 0;
+  var shot = [];
+  
 
 
   for (var i = 0; i < maxPlayer; i++) {
-  var sea1 = []
-  for(var i = 0; i<maxSea;i++){
-    var a = [];
-    for(var j = 0; j<maxSea;j++){
-      a.push(0);
+    var sea1 = []
+    for(var i = 0; i<maxSea;i++){
+      var a = [];
+      for(var j = 0; j<maxSea;j++){
+        a.push(0);
+      }
+      sea1.push(a);
     }
-    sea1.push(a);
-  }
     sea.push(sea1);
   }
 
@@ -56,6 +58,10 @@ var Game = function(io){
           var column = Math.floor((atLocationArray[i]%100)/10);
           var shipNum = Math.floor(atLocationArray[i]%10);
           sea[0][row][column] = shipNum;
+        }
+        playerSubmit++;
+        if(playerSubmit===maxPlayer){
+        io.to(gameId).emit('gameReady');
         }
       });
 
