@@ -15,15 +15,15 @@ var Game = function(io){
 
 
 
+  for (var i = 0; i < maxPlayer; i++) {
   var sea1 = []
   for(var i = 0; i<maxSea;i++){
     var a = [];
     for(var j = 0; j<maxSea;j++){
-      a.push({ship:0});
+      a.push(0);
     }
     sea1.push(a);
   }
-  for (var i = 0; i < maxPlayer; i++) {
     sea.push(sea1);
   }
 
@@ -52,10 +52,10 @@ var Game = function(io){
         }
 
         for (var i = 0; i < atLocationArray.length; i++) {
-          var row = atLocationArray[i].row;
-          var column = atLocationArray[i].column;
-          var shipNum = atLocationArray[i].ship;
-          sea[row][column] = {ship:shipNum};
+          var row = Math.floor(atLocationArray[i]/100);
+          var column = Math.floor((atLocationArray[i]%100)/10);
+          var shipNum = Math.floor(atLocationArray[i]%10);
+          sea[0][row][column] = shipNum;
         }
       });
 
