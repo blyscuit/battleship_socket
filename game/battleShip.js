@@ -14,10 +14,10 @@ var Game = function(io){
   var maxPlayer = 2;
   var playerSubmit = 0;
   var shot = [];
-  
 
 
-  for (var i = 0; i < maxPlayer; i++) {
+
+  for (var k = 0; k < maxPlayer; k++) {
     var sea1 = []
     for(var i = 0; i<maxSea;i++){
       var a = [];
@@ -47,21 +47,32 @@ var Game = function(io){
       // socket.broadcast.to(gameId).emit('playerJoined','hi');
       console.log('joiningGame');
 
-      socket.on('submitPlan',function(atLocationArray,playerNumber){
+      socket.on('submitPlan',function(atLocationArray){
 
-        if(playerNumber == 0){
-
+        if(socket.id == hostId){
+          for (var i = 0; i < atLocationArray.length; i++) {
+            var num = atLocationArray[i]
+            var row = Math.floor(num/100);
+            var column = Math.floor((num%100)/10);
+            var shipNum = Math.floor(num%10);
+            sea[0][row][column] = shipNum;
+            console.log(sea[0][row][column]);
+          }
+        }else{
+          for (var i = 0; i < atLocationArray.length; i++) {
+            var num = atLocationArray[i]
+            var row = Math.floor(num/100);
+            var column = Math.floor((num%100)/10);
+            var shipNum = Math.floor(num%10);
+            sea[1][row][column] = shipNum;
+            console.log(sea[1][row][column]);
+          }
         }
 
-        for (var i = 0; i < atLocationArray.length; i++) {
-          var row = Math.floor(atLocationArray[i]/100);
-          var column = Math.floor((atLocationArray[i]%100)/10);
-          var shipNum = Math.floor(atLocationArray[i]%10);
-          sea[0][row][column] = shipNum;
-        }
+
         playerSubmit++;
         if(playerSubmit===maxPlayer){
-        io.to(gameId).emit('gameReady');
+          io.to(gameId).emit('gameReady');
         }
       });
 
