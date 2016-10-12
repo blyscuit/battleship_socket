@@ -17,8 +17,8 @@
                 <ul>
                     <li
                     ng-repeat="ship in men track by $index" >
-                    <div class="dragShip" ng-if="ship.layout == 'ver'" style="width:50px; height:{{ship.length*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
-                    <div class="dragShip" ng-if="ship.layout == 'hor'" style="height:50px; width:{{ship.length*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
+                    <div class="dragShip" ng-if="ship.layout == 'ver'" style="width:50px; height:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
+                    <div class="dragShip" ng-if="ship.layout == 'hor'" style="height:50px; width:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
 
                     </li>
                 </ul>
@@ -31,9 +31,9 @@
                       <ul>
                     <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
                         <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
-                            {{ship.length}}</div>
+                            {{ship.name}}</div>
                         <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
-                            {{ship.length}}</div>
+                            {{ship.name}}</div>
                     </li>
                   </ul>
                 </div>

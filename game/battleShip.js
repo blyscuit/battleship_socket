@@ -14,6 +14,8 @@ var Game = function(io){
   var maxPlayer = 2;
   var playerSubmit = 0;
   var shot = [];
+  var shotAt = [];
+  var turn = Math.floor(Math.random() * 2) + 0  ;
 
   var boardStatus;
 
@@ -28,6 +30,8 @@ var Game = function(io){
       sea1.push(a);
     }
     sea.push(sea1);
+    shot.push([]);
+    shotAt.push([]);
   }
 
   var myTimer = new Timer({
@@ -49,27 +53,25 @@ var Game = function(io){
       console.log('joiningGame');
 
       socket.on('submitPlan',function(atLocationArray){
-        if(socket.id == hostId){
-          for (var i = 0; i < atLocationArray.length; i++) {
-            var num = atLocationArray[i]
-            var row = Math.floor(num/100);
-            var column = Math.floor((num%100)/10);
-            var shipNum = Math.floor(num%10);
+        for (var i = 0; i < atLocationArray.length; i++) {
+          var num = atLocationArray[i]
+          var row = num[0];
+          var column = num[1];
+          var shipNum = num[2];
+          if(socket.id == hostId){
             sea[0][row][column] = shipNum;
-          }
-        }else{
-          for (var i = 0; i < atLocationArray.length; i++) {
-            var num = atLocationArray[i]
-            var row = Math.floor(num/100);
-            var column = Math.floor((num%100)/10);
-            var shipNum = Math.floor(num%10);
+          }else{
             sea[1][row][column] = shipNum;
           }
         }
+
         io.to(socket.id).emit('receivedPlan');
         playerSubmit++;
         if(playerSubmit===maxPlayer){
-          io.to(gameId).emit('gameReady');
+          if(turn === 1){
+            io.to(hostId).emit('gameReady',true);
+            io.to(joinId).emit('gameReady',false);
+          }
         }
       });
 
@@ -79,17 +81,37 @@ var Game = function(io){
       });
 
       socket.on('submitMove',function(move){
-        if(socket.id == hostId){
-          console.log('%s submit move',hostName);
-          io.to(hostId).emit('result');
-          io.to(joinId).emit('update map');
+        if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
+          var row = move[0];
+          var column = move[1];
+          if(socket.id == hostId){
+            console.log(row +" "+column+ " "+ sea[1][row][column]);
+            console.log('%s submit move',hostName);
+            shot[0].push([row,column]);
+            var hit = 1;
+            if(sea[1][row][column]>0){
+              hit = 2;
+            }
+            shotAt[1].push([row,column,hit]);
+            io.to(hostId).emit('result',shotAt[1]);
+            io.to(joinId).emit('update map',shot[0]);
+            turn = 1;
+          }
+          if(socket.id == joinId){
+            console.log(row +" "+column+ " "+ sea[0][row][column]);
+            console.log('%s submit move',joinName);
+            shot[1].push([row,column]);
+            var hit = 1;
+            if(sea[0][row][column]>0){
+              hit = 2;
+            }
+            shotAt[0].push([row,column,hit]);
+            io.to(joinId).emit('result',shotAt[0]);
+            io.to(hostId).emit('update map',shot[1]);
+            turn = 0;
+          }
+          socket.broadcast.to(gameId).emit(move);
         }
-        if(socket.id == joinId){
-          console.log('%s submit move',joinName);
-          io.to(joinId).emit('result');
-          io.to(hostId).emit('update map');
-        }
-        socket.broadcast.to(gameId).emit(move);
       });
 
       socket.on('playerJoined',function(hi){

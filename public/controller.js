@@ -17,6 +17,10 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
 
+  $scope.turnName = "You";
+
+  $scope.gameTurn = $stateParams.myParam.turn;
+
   $scope.score = 0;
   $scope.OppScore = 0;
 
@@ -24,10 +28,38 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   for(var i = 0; i<$scope.maxSea;i++){
     var a = [];
     for(var j = 0; j<$scope.maxSea;j++){
-      a.push({"length":0,"layout":"hor"});
+      a.push({"length":0,"name":0});
     }
     $scope.oppSea.push(a);
   }
+
+  $scope.shootAt = function(j,i){
+    socket.emit("submitMove",[i,j]);
+  }
+
+  socket.on('result',function(shotAt){
+    $scope.turn = false;
+    $scope.turnName = $scope.opponent;
+    for (var i = 0; i < shotAt.length; i++) {
+      var nn = shotAt[i];
+        var row = nn[0];
+        var column = nn[1];
+        var re = nn[2];
+        $scope.oppSea[row][column] = {"length":re,"name":re};
+    }
+  });
+  socket.on('update map',function(shot){
+    $scope.turn = true;
+    $scope.turnName = "You";
+    for (var i = 0; i < shot.length; i++) {
+      var nn = shot[i];
+        var row = nn[0];
+        var column = nn[1];
+        var ship = $scope.sea[row][column].name;
+        if(ship<=5)
+        $scope.sea[row][column] = {"length":ship+6,"name":ship+6};
+    }
+  });
 
 });
 
@@ -66,7 +98,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   for(var i = 0; i<$scope.maxSea;i++){
     var a = [];
     for(var j = 0; j<$scope.maxSea;j++){
-      a.push({"length":0,"layout":"hor"});
+      a.push({"length":0,"layout":"hor","name":0});
     }
     $scope.sea.push(a);
   }
@@ -74,10 +106,10 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   console.log($scope.sea);
 
   $scope.men = [
-    {"length":3,"layout":"hor"},
-    {"length":2,"layout":"hor"},
-    {"length":4,"layout":"hor"},
-    {"length":5,"layout":"hor"},
+    {"length":4,"layout":"hor","name":1},
+    {"length":4,"layout":"hor","name":2},
+    {"length":4,"layout":"hor","name":3},
+    {"length":4,"layout":"hor","name":4},
   ];
 
   $scope.addText = "";
@@ -148,7 +180,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       var a = [];
       for(var j = 0; j<$scope.maxSea;j++){
         if($scope.sea[i][j]==ship){
-          $scope.sea[i][j]={"length":0,"layout":"hor"};
+          $scope.sea[i][j]={"length":0,"layout":"hor","name":0};
         }
       }
     }
@@ -164,7 +196,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       for(var i = 0; i<$scope.maxSea;i++){
         for(var j = 0; j<$scope.maxSea;j++){
           if($scope.sea[i][j].length>0){
-            var num = i*100+j*10+$scope.sea[i][j].length;
+            var num = [i,j,$scope.sea[i][j].name];
             a.push(num);
           }
         }
@@ -176,8 +208,8 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   socket.on('receivedPlan',function(){
     $scope.send = true;
   });
-  socket.on('gameReady', function() {
-    $state.go('gameTurn',{ myParam:{sea:$scope.sea,maxSea:$scope.maxSea}});
+  socket.on('gameReady', function(_turn) {
+    $state.go('gameTurn',{ myParam:{sea:$scope.sea,maxSea:$scope.maxSea,turn:_turn}});
   });
 
   socket.on('updatechat', function(data,datadata) {
