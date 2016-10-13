@@ -42,7 +42,6 @@ io.on('connection',function(socket){
   console.log('a user connected');
 
   socket.on('joinGame',function(playerName){
-    console.log("server called by %s",playerName);
     if(gameRooms.length === 0){
       gameRooms.push(new Game(io));
       gameRooms[0].join(socket,playerName);

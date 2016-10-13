@@ -15,7 +15,7 @@ var Game = function(io){
   var playerSubmit = 0;
   var shot = [];
   var shotAt = [];
-  var turn = Math.floor(Math.random() * 2) + 0  ;
+  var turn = Math.floor(Math.random() * 2) + 0; //random 0-1
 
   var boardStatus;
 
@@ -71,6 +71,9 @@ var Game = function(io){
           if(turn === 1){
             io.to(hostId).emit('gameReady',true);
             io.to(joinId).emit('gameReady',false);
+          }else{
+            io.to(hostId).emit('gameReady',false);
+            io.to(joinId).emit('gameReady',true);
           }
         }
       });
@@ -84,6 +87,8 @@ var Game = function(io){
         if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
           var row = move[0];
           var column = move[1];
+          var timeEnd;
+          myTimer.stop();
           if(socket.id == hostId){
             console.log(row +" "+column+ " "+ sea[1][row][column]);
             console.log('%s submit move',hostName);
@@ -110,6 +115,18 @@ var Game = function(io){
             io.to(hostId).emit('update map',shot[1]);
             turn = 0;
           }
+
+          myTimer.start(20).on('end',function(){
+            if(turn === 0){
+              io.to(hostId).emit('result',shotAt[1]);
+              io.to(joinId).emit('update map',shot[0]);
+              turn = 1;
+            }else if(turn ===1 ){
+              io.to(joinId).emit('result',shotAt[0]);
+              io.to(hostId).emit('update map',shot[1]);
+              turn = 0;
+            }
+          });
           socket.broadcast.to(gameId).emit(move);
         }
       });
@@ -129,8 +146,6 @@ var Game = function(io){
         console.log("joining : %s : %s",joinId,playerName);
         io.to(hostId).emit('startGame',joinName);
         io.to(joinId).emit('startGame',hostName);
-        // io.to(hostId).emit('startGame',"playing VS join");
-        // io.to(joinId).emit('startGame',"playing vs Host");
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;
