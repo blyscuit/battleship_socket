@@ -20,6 +20,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.turnName = "You";
 
   $scope.gameTurn = $stateParams.myParam.turn;
+  if($scope.gameTurn===false){
+    $scope.turnName = $scope.opponent;
+  }
 
   $scope.score = 0;
   $scope.OppScore = 0;
