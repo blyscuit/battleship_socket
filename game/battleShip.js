@@ -83,6 +83,10 @@ var Game = function(io){
         socket.broadcast.to(gameId).emit('playerQuit');
       });
 
+//WOODS check dead around here
+//add score as a variable and send socket to end game with new score
+// just work on game.html
+// and controller.js
       socket.on('submitMove',function(move){
         if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
           var row = move[0];
