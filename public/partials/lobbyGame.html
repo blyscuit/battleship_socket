@@ -1,9 +1,12 @@
 <div class="container text-center padding80 border-top" id="1">
-  <h2 class="uppercase">Box.BattleShip()</h2>
-  <h3>People online {{online}}</h3>
+  <h2 class="uppercase clip">Box.BattleShip()</h2>
+  <h3 class="clip">People online {{online}}</h3>
 
-     <input type="text" placeholder="name" name="userName" ng-model="username" required>
-     <button ng-disabled="false" class="button center" ng-click="playButton()">Play</button>
+     <input class="clip" type="text" placeholder="name" name="userName" ng-model="username" required>
+     <br><br>
+     <div ng-disabled="false" class="center" ng-click="playButton()">
+       <img class="center afterButton" src="/img/AfterClickW.PNG" height="50" alt="submit" />
+     </div>
      <!-- <button ng-disabled="!username" class="button center" ng-click="playButton()">Play</button> -->
 
 

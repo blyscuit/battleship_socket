@@ -1,48 +1,48 @@
 <div class="container text-center padding80 border-top" id="1">
-  <h2 class="uppercase">Box.BattleShip()</h2>
-  <h3>Opponent : {{opponent}}</h3>
+  <h2 class="uppercase clip">Box.BattleShip()</h2>
+  <h3 class="clip">Opponent : {{opponent}}</h3>
 
-    <div class="row">
-      <div class="col-xs-12">
+  <div class="row">
+    <div class="col-xs-12">
 
-        <h3>{{gameTime}}</h3>
+      <h3 class="clip">{{gameTime}}</h3>
 
-        Click on ship to rotate
-        Drag ship to sea
-        Click sea to remove ship
+      <p class="clip">Click on ship to rotate<br>
+      Drag ship to sea<br>
+      Click sea to remove ship</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-3">
+      <ul>
+        <li
+        ng-repeat="ship in men track by $index" >
+        <div class="dragShipVer" ng-if="ship.layout == 'ver'" style="background-image:url('img/sub{{ship.name}}.png'); width:50px; height:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
+        <div class="dragShip" ng-if="ship.layout == 'hor'" style="background-image:url('img/sub{{ship.name}}.png');height:50px; width:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
+
+      </li>
+    </ul>
+  </div>
+  <div class="col-xs-9 sea">
+    <ul class="seaBox">
+      <li ng-repeat="a in sea track by $index">
+
+        <div class="col-xs-1 seaColumn col-xs-offset-0">
+          <ul>
+            <li class="shipOnBoard{{ship.name}} td{{ship.length}}" ng-repeat="ship in a track by $index" style="background-image:url('img/sub{{ship.name}}.png');">
+              <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+                {{ship.name}}</div>
+                <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                  {{ship.name}}</div>
+                </li>
+              </ul>
+            </div>
+          </li>
+        </ul>
       </div>
     </div>
-    <div class="row">
-            <div class="col-xs-3">
-                <ul>
-                    <li
-                    ng-repeat="ship in men track by $index" >
-                    <div class="dragShip" ng-if="ship.layout == 'ver'" style="width:50px; height:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
-                    <div class="dragShip" ng-if="ship.layout == 'hor'" style="height:50px; width:{{4*35}}px;" on-drop-success="dropSuccessHandler($event,$index,men)" ui-draggable="true" drag="ship" ng-click="turnShip(ship)">{{ship.length + ship.layout}}</div>
 
-                    </li>
-                </ul>
-            </div>
-            <div class="col-xs-9 sea">
-                <ul class="seaBox">
-                    <li ng-repeat="a in sea track by $index">
-
-                              <div class="sea col-xs-1">
-                      <ul>
-                    <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
-                        <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
-                            {{ship.name}}</div>
-                        <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
-                            {{ship.name}}</div>
-                    </li>
-                  </ul>
-                </div>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <button ng-disabled="men.length>0||send==true" ng-click="submitButton()">Submit</button>
+    <button ng-disabled="men.length>0||send==true" ng-click="submitButton()">Submit</button>
 
 
-</div>
+  </div>

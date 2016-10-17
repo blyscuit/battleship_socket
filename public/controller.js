@@ -1,18 +1,7 @@
 var simpleControllers = angular.module('simpleControllers', []);
-simpleControllers.controller('LobbyCtrl', function($state,$scope, socket) {
-  $scope.newCustomers = [];
-  $scope.currentCustomer = {};
 
 
-  socket.on('updatechat', function(data,datadata) {
-    $scope.$apply(function () {
-      $scope.newCustomers.push(datadata);
-      console.log(datadata);
-    });
-  });
-});
-
-simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket) {
+simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
   $scope.opponent = $rootScope.opponent;
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
@@ -66,7 +55,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
 
 });
 
-simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket) {
+simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
 
   $scope.username  = $stateParams.myParam.username;
 
@@ -77,16 +66,31 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
     // socket.emit('joinGame',$scope.username);
     socket.emit('joinGame',$stateParams.myParam.username);
 
-  if($stateParams.myParam){
-    socket.emit('checkPlayerInRoom',$stateParams.myParam['username'],$stateParams.room);
-  }
-
-
   socket.on('startGame',function(name){
     $rootScope.opponent = name;
     $state.go('gamePrepare',{});
   });
+  ////////IMPORTANT REMOVE THIS
+  $state.go('gamePrepare',{});
+  ////////
 
+  socket.on('connected', function(connected){
+    $scope.online = connected.numUsers;
+  })
+
+  $scope.online = $stateParams.myParam.online;
+  $scope.matching = "."
+  var mm = 0;
+  $interval(function() {
+            if (mm==0) {$scope.matching = "..";mm++;} else if (mm==1) {$scope.matching = "...";mm++;
+            } else if (mm==2) {
+              $scope.matching = "....";
+              mm++;
+            } else if (mm==3) {
+              $scope.matching = ".";
+              mm=0;
+            }
+          }, 750);
 });
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
     $scope.opponent = $rootScope.opponent;
@@ -230,7 +234,7 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket) {
 
   //Game start here
   $scope.playButton = function() {
-  $state.go('gameWait',{ myParam:{username:$scope.username}});
+  $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
   };
   $scope.online = 0;
   socket.on('updatechat', function(data,datadata) {

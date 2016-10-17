@@ -2,6 +2,38 @@ body{
     background-color: rgb(230,230,250);
 }
 
+/*html, body{ background-color: rgb(230,230,250);}*/
+p{ margin: 0px; }
+
+.clip{
+  /*
+  Ensure background is added first
+  */
+  background: url("img/Layer11.png");
+background-size: 30% ;
+   background-attachment: fixed;
+   background-repeat: repeat;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+/*
+  font-size: 28vw;
+  font-weight: bold;
+  text-align: center;*/
+}
+
+.afterButton{
+    cursor:pointer;
+}
+.afterButton:hover{
+  background: url("img/Layer11.png");
+background-size: 30% ;
+   background-attachment: fixed;
+   background-repeat: repeat;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: border-box;
+}
+
+
 #main{
     display: inline-block;
     margin: auto;
@@ -64,9 +96,17 @@ li{
   background-color: white;
 }
 ul.seaBox{
-  width:150%
+background: url("img/boardPiece.png");
+background-size:contain ;
+background-repeat: no-repeat;
+background-clip: border-box;
+  width:150%;
+  padding: 0;
 }
-li.td0{
+ul.seaColumn{
+  padding: 0;
+}
+/*li.td0{
   background-color: lightblue;
   width: 200%;
 }li.td2{
@@ -81,13 +121,33 @@ li.td0{
 }li.td3{
   background-color: white;
   width: 200%;
-}
+}*/
 .sea{
-  background-color: lightblue;
+  /*background-color: lightblue;*/
+  /*background: url("img/board.png");
+background-size:50% ;
+background-repeat: no-repeat;*/
 }
 .dragShip{
+  /*background-image: url(img/sub1.png);*/
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   text-align: left;border-style: solid; border-color:white; background-color:black; color:white;
 }
+.dragShipVer{
+  /*background-image: url(img/sub1.png);*/
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  text-align: left;border-style: solid; border-color:white; background-color:black; color:white;
+}
+.shipOnBoard{
+    /*background: url("img/sub1.png");*/
+    background-size: cover ;
+    background-attachment: fixed;
+    background-repeat: no-repeat;;
+    -webkit-text-fill-color: transparent;
+    -webkit-background-clip: border-box;
+  }
 
 td:hover{
     cursor: pointer;
