@@ -71,7 +71,7 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
     $state.go('gamePrepare',{});
   });
   ////////IMPORTANT REMOVE THIS
-  $state.go('gamePrepare',{});
+  // $state.go('gamePrepare',{});
   ////////
 
   socket.on('connected', function(connected){
@@ -105,7 +105,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   for(var i = 0; i<$scope.maxSea;i++){
     var a = [];
     for(var j = 0; j<$scope.maxSea;j++){
-      a.push({"length":0,"layout":"hor","name":0});
+      a.push({"length":0,"layout":"null","name":0});
     }
     $scope.sea.push(a);
   }
@@ -187,7 +187,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       var a = [];
       for(var j = 0; j<$scope.maxSea;j++){
         if($scope.sea[i][j]==ship){
-          $scope.sea[i][j]={"length":0,"layout":"hor","name":0};
+          $scope.sea[i][j]={"length":0,"layout":"null","name":0};
         }
       }
     }

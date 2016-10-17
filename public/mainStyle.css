@@ -10,14 +10,14 @@ p{ margin: 0px; }
   Ensure background is added first
   */
   background: url("img/Layer11.png");
-background-size: 30% ;
+background-size: 70% ;
    background-attachment: fixed;
    background-repeat: repeat;
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: text;
+  font-weight: bold;
 /*
   font-size: 28vw;
-  font-weight: bold;
   text-align: center;*/
 }
 
@@ -26,13 +26,30 @@ background-size: 30% ;
 }
 .afterButton:hover{
   background: url("img/Layer11.png");
-background-size: 30% ;
+background-size: 66% ;
    background-attachment: fixed;
    background-repeat: repeat;
   -webkit-text-fill-color: transparent;
   -webkit-background-clip: border-box;
 }
 
+.bigSea{
+  background: url("img/Layer11.png");
+  background-size: 100% ;
+   background-attachment: fixed;
+   background-repeat: repeat;
+}
+
+.seaFloorHit{
+  color: rgb(230,230,250);
+  font-weight: 700;
+  background: url("img/Layer11.png");
+background-size: contain ;
+   background-attachment: fixed;
+   background-repeat: repeat;
+  /*-webkit-text-fill-color: transparent;*/
+  -webkit-background-clip: border-box;
+}
 
 #main{
     display: inline-block;
@@ -141,11 +158,13 @@ background-repeat: no-repeat;*/
   text-align: left;border-style: solid; border-color:white; background-color:black; color:white;
 }
 .shipOnBoard{
+  color: rgb(230,230,250);
+  font-weight: 700;
     /*background: url("img/sub1.png");*/
-    background-size: 100% ;
+    /*background-size: 1000% 1000% ;*/
     /*background-attachment: fixed;*/
     /*background-repeat: no-repeat;;*/
-    -webkit-text-fill-color: transparent;
+    /*-webkit-text-fill-color: transparent;*/
     -webkit-background-clip: border-box;
   }
 

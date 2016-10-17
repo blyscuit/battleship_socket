@@ -1,13 +1,13 @@
 <div class="container text-center padding80 border-top" id="1">
   <h2 class="uppercase">Box.BattleShip()</h2>
   <div class="row">
-    <div class="col-xs-12 sea">
+    <div class="clip col-xs-12 sea">
       <h2>Turn : {{turnName}}</h2>
     </div>
-    <div class="col-xs-6 sea">
+    <div class="clip col-xs-6 sea">
       <h3>You : {{score}}</h3>
     </div>
-    <div class="col-xs-6 sea">
+    <div class="clip col-xs-6 sea">
       <h3>{{opponent}} : {{OppScore}}</h3>
     </div>
   </div>
@@ -18,10 +18,14 @@
 
           <div class="sea col-xs-1">
             <ul>
-              <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
-                <div ng-if="ship.length > 0" style="height:45px;">
-                  {{ship.name}}</div>
-                  <div ng-if="ship.length == 0" style="height:45px;">
+              <li class="shipOnBoard td{{ship.length}}" ng-repeat="ship in a track by $index">
+                <div class="shipOnBoard td{{ship.length}}" ng-if="ship.name > 6" style="height:45px; background-image:url('img/sub{{ship.name-6}}h.png');background-position:{{14*$parent.$index}}% {{14*$index}}%;">
+                  Hit{{ship.name}}</div>
+                  <div class="shipOnBoard td{{ship.length}}" ng-if="ship.name < 6 && ship.name >0" style="height:45px; background-image:url('img/sub{{ship.name}}.png');background-position:{{14*$parent.$index}}% {{14*$index}}%;">
+                    {{ship.name}}</div>
+                  <div class="clip td{{ship.length}}" ng-if="ship.name == 6 && ship.name >0" style="height:45px;">
+                      Miss</div>
+                  <div class="clip" ng-if="ship.length == 0" style="height:45px;">
                     {{ship.name}}</div>
                   </li>
                 </ul>
@@ -36,10 +40,13 @@
               <div class="sea col-xs-1">
                 <ul>
                   <li class="td{{ship.length}}" ng-repeat="ship in a track by $index">
-                    <div ng-if="ship.length > 0" ng-click="shootAt($index,$parent.$index)" style="height:45px;">
-                      {{ship.name}}</div>
-                      <div ng-if="ship.length == 0" ng-click="shootAt($index,$parent.$parent.$index)" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
-                        {{ship.name}}</div>
+
+                      <div class="seaFloorHit td{{ship.length}}" ng-if="ship.length == 2" ng-click="shootAt($index,$parent.$index)" style="height:45px;background:#000;background-position:{{14*$parent.$index}}% {{14*$index}}%;">
+                        Hit</div>
+                    <div class="seaFloorHit td{{ship.length}}" ng-if="ship.length == 1" ng-click="shootAt($index,$parent.$index)" style="height:45px;background-image:url('img/Layer11.png');background-position:{{14*$parent.$index}}% {{14*$index}}%;">
+                      Miss</div>
+                      <div ng-if="ship.length == 0" ng-click="shootAt($index,$parent.$parent.$index)" style="height:45px;">
+                        ?</div>
                       </li>
                     </ul>
                   </div>
