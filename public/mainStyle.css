@@ -44,11 +44,15 @@ background-size: 66% ;
   color: rgb(230,230,250);
   font-weight: 700;
   background: url("img/Layer11.png");
-background-size: contain ;
+background-size: 66% ;
    background-attachment: fixed;
    background-repeat: repeat;
   /*-webkit-text-fill-color: transparent;*/
   -webkit-background-clip: border-box;
+}
+
+.seaBoxView{
+  height:45px;width:65px;
 }
 
 #main{
