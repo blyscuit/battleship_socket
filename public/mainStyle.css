@@ -142,9 +142,9 @@ background-repeat: no-repeat;*/
 }
 .shipOnBoard{
     /*background: url("img/sub1.png");*/
-    background-size: cover ;
-    background-attachment: fixed;
-    background-repeat: no-repeat;;
+    background-size: 100% ;
+    /*background-attachment: fixed;*/
+    /*background-repeat: no-repeat;;*/
     -webkit-text-fill-color: transparent;
     -webkit-background-clip: border-box;
   }
