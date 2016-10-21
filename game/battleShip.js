@@ -54,7 +54,7 @@ var Game = function(io){
 
 
   var myTimer = new Timer({
-    tick    : 1, // how many sec per tick
+    tick    : 0.5, // how many sec per tick
     ontick  : function(ms) {
       io.sockets.in(gameId).emit('timer', { time: ms });
       console.log(ms + ' ms left') },  //ms <-> sec
@@ -66,7 +66,8 @@ var Game = function(io){
 
     function startTimeTicking(){
       myTimer.stop();
-      myTimer.start(10).on('end',function(){
+      myTimer.start(11).on('end',function(){
+        io.sockets.in(gameId).emit('timer', { time: 10000 });
         if(turn === 0){
           io.to(hostId).emit('result',shotAt[1]);
           io.to(joinId).emit('update map',shot[0]);
