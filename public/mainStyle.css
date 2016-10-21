@@ -53,6 +53,7 @@ background-size: 66% ;
 
 .seaBoxView{
   height:45px;width:65px;
+    border-style: dashed;border-width: 1px;
 }
 
 #main{

@@ -6,6 +6,11 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
 
+  $scope.gameTime = ""+0;
+  socket.on('timer',function(data){
+    $scope.gameTime = ""+ Math.floor(data.time/1000);
+  });
+  
   $scope.turnName = "You";
 
   $scope.gameTurn = $stateParams.myParam.turn;
@@ -95,10 +100,6 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
-    $scope.gameTime = ""+0;
-    socket.on('timer',function(data){
-      $scope.gameTime = ""+ Math.floor(data.time/1000);
-    });
 
   $scope.maxSea = 8
   $scope.sea = [];

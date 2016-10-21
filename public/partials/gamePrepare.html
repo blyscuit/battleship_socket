@@ -5,8 +5,6 @@
   <div class="row">
     <div class="col-xs-12">
 
-      <h3 class="clip">{{gameTime}}</h3>
-
       <p class="clip">Click on ship to rotate<br>
       Drag ship to sea<br>
       Click sea to remove ship</p>
@@ -30,9 +28,9 @@
         <div class="col-xs-1 seaColumn col-xs-offset-0">
           <ul>
             <li class="shipOnBoard td{{ship.length}}" ng-repeat="ship in a track by $index" style="background-image:url('img/sub{{ship.name}}.png');background-position:{{14*$parent.$index}}% {{14*$index}}%;">
-              <div ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
+              <div class="seaBoxView" ng-if="ship.length > 0" ng-click="removeShip(ship)" style="height:45px;">
                 {{ship.name}}</div>
-                <div ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
+                <div class="seaBoxView" ng-if="ship.length == 0" style="height:45px;" ui-on-Drop="onDropPlace($event,$data,$index,$parent.$parent.$index,men)" drop-validate="dropValidateSpace($data,$index,$parent.$parent.$index)">
                   {{ship.name}}</div>
                 </li>
 

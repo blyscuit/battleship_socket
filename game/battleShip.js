@@ -75,6 +75,17 @@ var Game = function(io){
             io.to(hostId).emit('gameReady',false);
             io.to(joinId).emit('gameReady',true);
           }
+          myTimer.start(10).on('end',function(){
+            if(turn === 0){
+              io.to(hostId).emit('result',shotAt[1]);
+              io.to(joinId).emit('update map',shot[0]);
+              turn = 1;
+            }else if(turn ===1 ){
+              io.to(joinId).emit('result',shotAt[0]);
+              io.to(hostId).emit('update map',shot[1]);
+              turn = 0;
+            }
+          });
         }
       });
 
@@ -120,7 +131,7 @@ var Game = function(io){
             turn = 0;
           }
 
-          myTimer.start(20).on('end',function(){
+          myTimer.start(10).on('end',function(){
             if(turn === 0){
               io.to(hostId).emit('result',shotAt[1]);
               io.to(joinId).emit('update map',shot[0]);
