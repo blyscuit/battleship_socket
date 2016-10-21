@@ -10,7 +10,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   socket.on('timer',function(data){
     $scope.gameTime = ""+ Math.floor(data.time/1000);
   });
-  
+
   $scope.turnName = "You";
 
   $scope.gameTurn = $stateParams.myParam.turn;
@@ -55,6 +55,15 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         var ship = $scope.sea[row][column].name;
         if(ship<=5)
         $scope.sea[row][column] = {"length":ship+6,"name":ship+6};
+    }
+  });
+  socket.on('gameOver',function(score,oppScore,didWin){
+    $scope.score = score;
+    $scope.OppScore = oppScore;
+    if(didWin == 1){
+      alert("You won!");
+    }else{
+      alert("You lose :(");
     }
   });
 

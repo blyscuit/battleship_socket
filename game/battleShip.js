@@ -16,9 +16,10 @@ var Game = function(io){
   var shot = [];
   var shotAt = [];
   var turn = Math.floor(Math.random() * 2) + 0; //random 0-1
-
+  var playerScore = [];
+  var playerLife = [];
   var boardStatus;
-
+  var maxLife = 16;
 
   for (var k = 0; k < maxPlayer; k++) {
     var sea1 = []
@@ -32,6 +33,8 @@ var Game = function(io){
     sea.push(sea1);
     shot.push([]);
     shotAt.push([]);
+    playerScore.push(0);
+    playerLife.push(0);
   }
 
   var myTimer = new Timer({
@@ -45,7 +48,21 @@ var Game = function(io){
       onend   : function() { console.log('timer ended normally') }
     });
 
-
+    function startTimeTicking(){
+      myTimer.stop();
+      myTimer.start(10).on('end',function(){
+        if(turn === 0){
+          io.to(hostId).emit('result',shotAt[1]);
+          io.to(joinId).emit('update map',shot[0]);
+          turn = 1;
+        }else if(turn ===1 ){
+          io.to(joinId).emit('result',shotAt[0]);
+          io.to(hostId).emit('update map',shot[1]);
+          turn = 0;
+        }
+        startTimeTicking();
+      });
+    }
     function join(socket,playerName){
       socket.join(gameId);
       playerCount++;
@@ -69,23 +86,14 @@ var Game = function(io){
         playerSubmit++;
         if(playerSubmit===maxPlayer){
           if(turn === 1){
-            io.to(hostId).emit('gameReady',true);
-            io.to(joinId).emit('gameReady',false);
-          }else{
             io.to(hostId).emit('gameReady',false);
             io.to(joinId).emit('gameReady',true);
+          }else{
+            io.to(hostId).emit('gameReady',true);
+            io.to(joinId).emit('gameReady',false);
           }
-          myTimer.start(10).on('end',function(){
-            if(turn === 0){
-              io.to(hostId).emit('result',shotAt[1]);
-              io.to(joinId).emit('update map',shot[0]);
-              turn = 1;
-            }else if(turn ===1 ){
-              io.to(joinId).emit('result',shotAt[0]);
-              io.to(hostId).emit('update map',shot[1]);
-              turn = 0;
-            }
-          });
+
+          startTimeTicking();
         }
       });
 
@@ -94,10 +102,10 @@ var Game = function(io){
         socket.broadcast.to(gameId).emit('playerQuit');
       });
 
-//WOODS check dead around here
-//add score as a variable and send socket to end game with new score
-// just work on game.html
-// and controller.js
+      //WOODS check dead around here
+      //add score as a variable and send socket to end game with new score
+      // just work on game.html
+      // and controller.js
       socket.on('submitMove',function(move){
         if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
           var row = move[0];
@@ -105,12 +113,16 @@ var Game = function(io){
           var timeEnd;
           myTimer.stop();
           if(socket.id == hostId){
-            console.log(row +" "+column+ " "+ sea[1][row][column]);
-            console.log('%s submit move',hostName);
             shot[0].push([row,column]);
             var hit = 1;
             if(sea[1][row][column]>0){
               hit = 2;
+              playerLife[0]+=1;
+              if(playerLife[0]>=maxLife){
+                playerScore[0]++;
+                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
+                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
+              }
             }
             shotAt[1].push([row,column,hit]);
             io.to(hostId).emit('result',shotAt[1]);
@@ -118,12 +130,16 @@ var Game = function(io){
             turn = 1;
           }
           if(socket.id == joinId){
-            console.log(row +" "+column+ " "+ sea[0][row][column]);
-            console.log('%s submit move',joinName);
             shot[1].push([row,column]);
             var hit = 1;
             if(sea[0][row][column]>0){
               hit = 2;
+              playerLife[1]+=1;
+              if(playerLife[1]>=maxLife){
+                playerScore[1]++;
+                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
+                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
+              }
             }
             shotAt[0].push([row,column,hit]);
             io.to(joinId).emit('result',shotAt[0]);
@@ -131,17 +147,7 @@ var Game = function(io){
             turn = 0;
           }
 
-          myTimer.start(10).on('end',function(){
-            if(turn === 0){
-              io.to(hostId).emit('result',shotAt[1]);
-              io.to(joinId).emit('update map',shot[0]);
-              turn = 1;
-            }else if(turn ===1 ){
-              io.to(joinId).emit('result',shotAt[0]);
-              io.to(hostId).emit('update map',shot[1]);
-              turn = 0;
-            }
-          });
+          startTimeTicking();
           socket.broadcast.to(gameId).emit(move);
         }
       });
