@@ -73,6 +73,7 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 
   $scope.username  = $stateParams.myParam.username;
 
+    $scope.showParticles = true;
   // if(!$stateParams.myParam){
   //   $state.go("lobby");
   // }
