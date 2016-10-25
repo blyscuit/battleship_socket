@@ -38,13 +38,13 @@ app.config(['$stateProvider', '$urlRouterProvider',
         params:{myParam: null}
       })
       .state('gameTurn', {
-            url: '/game/:room/+',
+            // url: '/game/:room/+',
         templateUrl: '/partials/game.html',
         controller: 'GameCtrl',
         params:{myParam: null}
       })
       .state('gameEnd', {
-            url: '/game/:room/+',
+            // url: '/game/:room/+',
         templateUrl: '/partials/game.html',
         controller: 'GameEndCtrl',
         params:{myParam: null}
