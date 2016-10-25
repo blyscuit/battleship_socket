@@ -8,18 +8,6 @@ app.factory('socket', function (socketFactory) {
 
   return socket;
 });
-// app.factory('socket', ['$rootScope', function($rootScope) {
-//   var socket = io.connect();
-//
-//   return {
-//     on: function(eventName, callback){
-//       socket.on(eventName, callback);
-//     },
-//     emit: function(eventName, data) {
-//       socket.emit(eventName, data);
-//     }
-//   };
-// }]);
 app.config(['$stateProvider', '$urlRouterProvider',
     function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/")
