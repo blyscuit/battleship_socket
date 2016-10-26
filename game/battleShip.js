@@ -1,6 +1,7 @@
 var uuid = require('node-uuid');
 var Timer = require('timer.js');
-
+var ImagesClient = require('google-images');
+var client = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'AIzaSyAOCzQYhZw10lh2-Qx16Rrp4iNLh7tdZ00');
 var Game = function(io){
   var playerCount = 0;
   var gameId = uuid.v4();
@@ -93,96 +94,107 @@ var Game = function(io){
             io.to(hostId).emit('gameReady',true);
             io.to(joinId).emit('gameReady',false);
           }
-
-          startTimeTicking();
-        }
-      });
-
-      socket.on('disconnect',function(){
-        playerCount--;
-        socket.broadcast.to(gameId).emit('playerQuit');
-      });
-
-      //WOODS check dead around here
-      //add score as a variable and send socket to end game with new score
-      // just work on game.html
-      // and controller.js
-      socket.on('submitMove',function(move){
-        if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
-          var row = move[0];
-          var column = move[1];
-          var timeEnd;
-          myTimer.stop();
-          if(socket.id == hostId){
-            shot[0].push([row,column]);
-            var hit = 1;
-            if(sea[1][row][column]>0){
-              hit = 2;
-              playerLife[0]+=1;
-              if(playerLife[0]>=maxLife){
-                playerScore[0]++;
-                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
-                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
-              }
-            }
-            shotAt[1].push([row,column,hit]);
-            io.to(hostId).emit('result',shotAt[1]);
-            io.to(joinId).emit('update map',shot[0]);
-            turn = 1;
-          }
-          if(socket.id == joinId){
-            shot[1].push([row,column]);
-            var hit = 1;
-            if(sea[0][row][column]>0){
-              hit = 2;
-              playerLife[1]+=1;
-              if(playerLife[1]>=maxLife){
-                playerScore[1]++;
-                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
-                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
-              }
-            }
-            shotAt[0].push([row,column,hit]);
-            io.to(joinId).emit('result',shotAt[0]);
-            io.to(hostId).emit('update map',shot[1]);
-            turn = 0;
-          }
-
-          startTimeTicking();
-          socket.broadcast.to(gameId).emit(move);
-        }
-      });
-
-      socket.on('playerJoined',function(hi){
-        console.log('i know something is happened');
-        myTimer.start(10); //start timer for 10 sec;
-      });
-
-      socket.on('playerQuit',function(){
-        console.log('someone quit');
-      });
-
-      if(playerCount === 2){
-        joinName = playerName;
-        joinId = socket.id;
-        console.log("joining : %s : %s",joinId,playerName);
-        io.to(hostId).emit('startGame',joinName);
-        io.to(joinId).emit('startGame',hostName);
-        //when this emit, people goes to next page, selection page
-
-        myTimer.start(20); //start timer for 10 sec;
-      }else{
-        hostName = playerName;
-        hostId = socket.id;
-        console.log("joining : %s : %s",hostId,playerName);
-      }
+          client.search(hostName)
+            .then(function (images) {
+              io.to(hostId).emit('myImage',images[0].url);
+              io.to(joinId).emit('yourImage',images[0].url);
+              console.log("host image = "+images[0].url);
+            });
+            client.search(joinName)
+              .then(function (images) {
+                io.to(joinId).emit('myImage',images[0].url);
+                io.to(hostId).emit('yourImage',images[0].url);
+                console.log("join image = "+images[0].url);
+              });
+      startTimeTicking();
     }
+  });
 
-    /** Expose public methods */
-    this.getGameID = function () { return gameId; };
-    this.join = function (socket,playerName) { join(socket,playerName); };
-    this.isFull = function () { if(inProgress)return true;return playerCount === 2; };
+  socket.on('disconnect',function(){
+    playerCount--;
+    socket.broadcast.to(gameId).emit('playerQuit');
+  });
 
-  };
+  //WOODS check dead around here
+  //add score as a variable and send socket to end game with new score
+  // just work on game.html
+  // and controller.js
+  socket.on('submitMove',function(move){
+    if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
+      var row = move[0];
+      var column = move[1];
+      var timeEnd;
+      myTimer.stop();
+      if(socket.id == hostId){
+        shot[0].push([row,column]);
+        var hit = 1;
+        if(sea[1][row][column]>0){
+          hit = 2;
+          playerLife[0]+=1;
+          if(playerLife[0]>=maxLife){
+            playerScore[0]++;
+            io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
+            io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
+          }
+        }
+        shotAt[1].push([row,column,hit]);
+        io.to(hostId).emit('result',shotAt[1]);
+        io.to(joinId).emit('update map',shot[0]);
+        turn = 1;
+      }
+      if(socket.id == joinId){
+        shot[1].push([row,column]);
+        var hit = 1;
+        if(sea[0][row][column]>0){
+          hit = 2;
+          playerLife[1]+=1;
+          if(playerLife[1]>=maxLife){
+            playerScore[1]++;
+            io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
+            io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
+          }
+        }
+        shotAt[0].push([row,column,hit]);
+        io.to(joinId).emit('result',shotAt[0]);
+        io.to(hostId).emit('update map',shot[1]);
+        turn = 0;
+      }
 
-  module.exports = Game;
+      startTimeTicking();
+      socket.broadcast.to(gameId).emit(move);
+    }
+  });
+
+  socket.on('playerJoined',function(hi){
+    console.log('i know something is happened');
+    myTimer.start(10); //start timer for 10 sec;
+  });
+
+  socket.on('playerQuit',function(){
+    console.log('someone quit');
+  });
+
+  if(playerCount === 2){
+    joinName = playerName;
+    joinId = socket.id;
+    console.log("joining : %s : %s",joinId,playerName);
+    io.to(hostId).emit('startGame',joinName);
+    io.to(joinId).emit('startGame',hostName);
+    //when this emit, people goes to next page, selection page
+
+    myTimer.start(20); //start timer for 10 sec;
+  }else{
+    hostName = playerName;
+    hostId = socket.id;
+    console.log("joining : %s : %s",hostId,playerName);
+  }
+}
+
+/** Expose public methods */
+this.getGameID = function () { return gameId; };
+this.join = function (socket,playerName) { join(socket,playerName); };
+this.isFull = function () { if(inProgress)return true;return playerCount === 2; };
+
+};
+
+module.exports = Game;

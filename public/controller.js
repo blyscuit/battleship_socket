@@ -3,6 +3,7 @@ var simpleControllers = angular.module('simpleControllers', []);
 
 simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
   $scope.opponent = $rootScope.opponent;
+  $scope.username = $rootScope.you;
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
 
@@ -11,7 +12,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     $scope.gameTime = ""+ Math.floor(data.time/1000);
   });
 
-  $scope.turnName = "You";
+  $scope.turnName = $scope.username;
 
   $scope.gameTurn = $stateParams.myParam.turn;
   if($scope.gameTurn===false){
@@ -47,7 +48,7 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   });
   socket.on('update map',function(shot){
     $scope.turn = true;
-    $scope.turnName = "You";
+    $scope.turnName = $scope.username;
     for (var i = 0; i < shot.length; i++) {
       var nn = shot[i];
         var row = nn[0];
@@ -67,6 +68,12 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     }
   });
 
+  socket.on('myImage',function(url){
+    $scope.myImage = url
+  });
+  socket.on('yourImage',function(url){
+    $scope.yourImage = url
+  });
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
@@ -82,6 +89,7 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 
   socket.on('startGame',function(name){
     $rootScope.opponent = name;
+    $rootScope.you = $scope.username;
     $state.go('gamePrepare',{});
   });
   ////////IMPORTANT REMOVE THIS
