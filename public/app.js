@@ -8,18 +8,6 @@ app.factory('socket', function (socketFactory) {
 
   return socket;
 });
-// app.factory('socket', ['$rootScope', function($rootScope) {
-//   var socket = io.connect();
-//
-//   return {
-//     on: function(eventName, callback){
-//       socket.on(eventName, callback);
-//     },
-//     emit: function(eventName, data) {
-//       socket.emit(eventName, data);
-//     }
-//   };
-// }]);
 app.config(['$stateProvider', '$urlRouterProvider',
     function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/")
@@ -38,13 +26,13 @@ app.config(['$stateProvider', '$urlRouterProvider',
         params:{myParam: null}
       })
       .state('gameTurn', {
-            url: '/game/:room/+',
+            // url: '/game/:room/+',
         templateUrl: '/partials/game.html',
         controller: 'GameCtrl',
         params:{myParam: null}
       })
       .state('gameEnd', {
-            url: '/game/:room/+',
+            // url: '/game/:room/+',
         templateUrl: '/partials/game.html',
         controller: 'GameEndCtrl',
         params:{myParam: null}
