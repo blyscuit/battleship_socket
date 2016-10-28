@@ -100,6 +100,7 @@ var Game = function(io){
       socket.on('disconnect',function(){
         playerCount--;
         socket.broadcast.to(gameId).emit('playerQuit');
+        io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
       });
 
       //WOODS check dead around here
