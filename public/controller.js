@@ -254,14 +254,39 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   });
 });
 
+
+simpleControllers.controller('LobbyController', function($state,$scope, socket){
+
+    $scope.rooms = [];
+
+    socket.on('connected', function(c){
+        $scope.online = c.numUsers;
+        $scope.rooms = c.roomList;
+    })
+
+    socket.on('roomListUpdated', function (list) {
+        $scope.rooms = list;
+    })
+
+    $scope.createRoom = function () {
+        // Guard against empty name
+        var username = $scope.username;
+        if (typeof username === 'undefined' || username.length <= 0)return;
+        // $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
+
+        socket.emit('createGameRoom', username);
+    }
+
+});
+
+
+
 simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBootbox) {
   socket.on('connected', function(connected){
     $scope.online = connected.numUsers;
   })
 
-    socket.on('roomListUpdated', function (list) {
-        console.log(list);
-    })
+
 
   //Game start here
   $scope.playButton = function() {

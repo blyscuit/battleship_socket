@@ -3,7 +3,7 @@ var app = angular.module('mainApp', ['ngAnimate','ui.bootstrap','ui.router','sim
 
 // socket
 app.factory('socket', function (socketFactory) {
-  var myIoSocket = io.connect('http://localhost:8080');
+  var myIoSocket = io.connect('http://192.168.1.10:8080');
   socket = socketFactory({
     ioSocket: myIoSocket
   });
@@ -17,7 +17,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
 
   $stateProvider
       .state('lobby', {
-            url: '/',
+          url:'/',
+          templateUrl: '/partials/lobby.html',
+          controller: 'LobbyController'
+      })
+      .state('landing', {
+            url: '/landing',
         templateUrl: '/partials/lobbyGame.html',
         controller: 'LandingCtrl'
         // controller: 'GamePrepareCtrl'

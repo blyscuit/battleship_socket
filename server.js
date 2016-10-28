@@ -40,8 +40,17 @@ var roomList = [];
 //socket
 
 io.on('connection',function(socket){
-  io.emit('connected', { numUsers: ++numConnections });
-  console.log('a user connected');
+
+    var socketId = socket.id;
+
+  io.emit('connected', {
+      numUsers: ++numConnections,
+      roomList: roomList
+  });
+
+
+  console.log('user '+socketId+' connected | ' );
+
   socket.on('joinGame',function(playerName){
     if(gameRooms.length === 0){
       gameRooms.push(new Game(io));
@@ -64,22 +73,47 @@ io.on('connection',function(socket){
   });
 
   socket.on('disconnect',function(){
+      removeRoom(socket.room);
     io.emit('connected', { numUsers: --numConnections });
-    console.log('user disconnected');
+    console.log('user '+socketId+' disconnected');
+
   });
 
     socket.on('createGameRoom', function (hostName) {
         var room = {
             hostName: hostName,
-            hostId: roomList.length
+            hostId: socketId
         };
 
-        roomList.push(room);
+        // remove previous room created by this socket
+        // just in case the socket somehow create multiple room
+        removeRoom(socket.room);
 
-        io.emit('roomListUpdated', roomList);
+        // assign the new room to this socket
+        socket.room = room;
+
+        roomList.push(room);
+        notifyRoomListUpdated();
+
     })
 
 
+    // ==========================================================
+    // helper functions
+    // ==========================================================
+
+    function notifyRoomListUpdated() {
+        io.emit('roomListUpdated', roomList);
+    }
+
+    function removeRoom(room) {
+        if (room === 'undefined') return;
+        var index = roomList.indexOf(room);
+        if (index > -1) {
+            roomList.splice(index, 1);
+        }
+        notifyRoomListUpdated()
+    }
 
 
 });

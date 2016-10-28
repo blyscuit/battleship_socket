@@ -1,0 +1,19 @@
+<div particles-drv>
+</div>
+<div class="container text-center padding80 border-top" id="1" style="position:absolute;">
+    <h2 class="uppercase clip">Box.BattleShip()</h2>
+    <h3 class="clip">People online {{online}}</h3>
+    <h3>LOBBY</h3>
+
+    <input class="clip" type="text" placeholder="name" name="userName" ng-model="username" required>
+    <br><br>
+    <button class="center" ng-click="createRoom()">Create Room</button>
+
+    <ul>
+        <li ng-repeat="room in rooms">{{room.hostName}}</li>
+    </ul>
+
+
+
+
+</div>
