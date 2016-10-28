@@ -1,13 +1,16 @@
-var app = angular.module('sampleApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
+// our main app, load modules here
+var app = angular.module('mainApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
+
+// socket
 app.factory('socket', function (socketFactory) {
   var myIoSocket = io.connect('http://localhost:8080');
-
   socket = socketFactory({
     ioSocket: myIoSocket
   });
-
   return socket;
 });
+
+// route
 app.config(['$stateProvider', '$urlRouterProvider',
     function($stateProvider, $urlRouterProvider) {
   $urlRouterProvider.otherwise("/")

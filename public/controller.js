@@ -92,11 +92,6 @@ $rootScope.oppScore = 0;
   $scope.username  = $stateParams.myParam.username;
 
     $scope.showParticles = true;
-  // if(!$stateParams.myParam){
-  //   $state.go("lobby");
-  // }
-    // alert($stateParams.myParam.username);
-    // socket.emit('joinGame',$scope.username);
     socket.emit('joinGame',$stateParams.myParam.username);
 
   socket.on('startGame',function(name){
@@ -104,9 +99,7 @@ $rootScope.oppScore = 0;
     $rootScope.you = $scope.username;
     $state.go('gamePrepare',{});
   });
-  ////////IMPORTANT REMOVE THIS
-  // $state.go('gamePrepare',{});
-  ////////
+
 
   socket.on('connected', function(connected){
     $scope.online = connected.numUsers;
@@ -265,16 +258,20 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBo
   socket.on('connected', function(connected){
     $scope.online = connected.numUsers;
   })
+
+    socket.on('roomListUpdated', function (list) {
+        console.log(list);
+    })
+
   //Game start here
   $scope.playButton = function() {
-    if(typeof $scope.username==='undefined' || $scope.username.length<=0)return;
-  $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
-  };
-  $scope.online = 0;
-  socket.on('updatechat', function(data,datadata) {
-    $scope.$apply(function () {
-      // $scope.newCustomers.push(datadata);
-      console.log(datadata);
-    });
-  });
+      // Guard against empty name
+      var username = $scope.username;
+      if (typeof username === 'undefined' || username.length <= 0)return;
+      // $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
+
+      socket.emit('createGameRoom', username);
+
+  }
+
 });

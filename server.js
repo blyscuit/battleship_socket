@@ -35,12 +35,13 @@ server.listen(port, function(){
 var gameRooms = [];
 var numConnections = 0;
 
+var roomList = [];
+
 //socket
 
 io.on('connection',function(socket){
   io.emit('connected', { numUsers: ++numConnections });
   console.log('a user connected');
-
   socket.on('joinGame',function(playerName){
     if(gameRooms.length === 0){
       gameRooms.push(new Game(io));
@@ -66,6 +67,20 @@ io.on('connection',function(socket){
     io.emit('connected', { numUsers: --numConnections });
     console.log('user disconnected');
   });
+
+    socket.on('createGameRoom', function (hostName) {
+        var room = {
+            hostName: hostName,
+            hostId: roomList.length
+        };
+
+        roomList.push(room);
+
+        io.emit('roomListUpdated', roomList);
+    })
+
+
+
 
 });
 
