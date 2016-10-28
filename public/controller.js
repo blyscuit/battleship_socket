@@ -64,13 +64,13 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     $scope.score = $rootScope.userScore;
     $scope.OppScore = $rootScope.oppScore;
     if(didWin == 1){
-    $ngBootbox.alert('You won!')
+    $ngBootbox.alert('You won! '+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore);
       .then(function() {
           // console.log('Alert closed');
           $state.go('gamePrepare',{});
       });
     }else{
-    $ngBootbox.alert('You lose :(')
+    $ngBootbox.alert('You lose :('+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore);
       .then(function() {
           // console.log('Alert closed');
           $state.go('gamePrepare',{});
