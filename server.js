@@ -106,6 +106,12 @@ io.on('connection',function(socket){
         io.emit('roomListUpdated', roomList);
     }
 
+    /**
+     * Remove a room from roomList
+     * Do nothing if room not found or is undefined
+     * Will notify client of roomList changes
+     * @param room - the room to be removed
+     */
     function removeRoom(room) {
         if (room === 'undefined') return;
         var index = roomList.indexOf(room);
