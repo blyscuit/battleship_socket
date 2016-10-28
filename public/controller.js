@@ -64,13 +64,13 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     $scope.score = $rootScope.userScore;
     $scope.OppScore = $rootScope.oppScore;
     if(didWin == 1){
-    $ngBootbox.alert('You won! '+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore);
+    $ngBootbox.alert('You won! '+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore)
       .then(function() {
           // console.log('Alert closed');
           $state.go('gamePrepare',{});
       });
     }else{
-    $ngBootbox.alert('You lose :('+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore);
+    $ngBootbox.alert('You lose :('+ $scope.username+':'+$scope.userScore+" "+$scope.opponent+":"+$scope.oppScore)
       .then(function() {
           // console.log('Alert closed');
           $state.go('gamePrepare',{});
@@ -130,8 +130,8 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
 
-      $rootScope.userScore = score;
-      $rootScope.oppScore = oppScore;
+      $rootScope.userScore = $scope.score;
+      $rootScope.oppScore = $scope.oppScore;
       $scope.score = $rootScope.userScore;
       $scope.OppScore = $rootScope.oppScore;
 
@@ -256,7 +256,6 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 
   socket.on('updatechat', function(data,datadata) {
     $scope.$apply(function () {
-      // $scope.newCustomers.push(datadata);
       console.log(datadata);
     });
   });
@@ -268,7 +267,7 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBo
   })
   //Game start here
   $scope.playButton = function() {
-    if($scope.username.length<=0)return;
+    if(typeof $scope.username==='undefined' || $scope.username.length<=0)return;
   $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
   };
   $scope.online = 0;
