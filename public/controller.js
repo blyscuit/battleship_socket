@@ -1,7 +1,7 @@
 var simpleControllers = angular.module('simpleControllers', []);
 
 
-simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
+simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval,$ngBootbox) {
   $scope.opponent = $rootScope.opponent;
   $scope.username = $rootScope.you;
   $scope.sea = $stateParams.myParam.sea;
@@ -19,8 +19,8 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     $scope.turnName = $scope.opponent;
   }
 
-  $scope.score = 0;
-  $scope.OppScore = 0;
+  $scope.score = $rootScope.userScore;
+  $scope.OppScore = $rootScope.oppScore;
 
   $scope.oppSea = [];
   for(var i = 0; i<$scope.maxSea;i++){
@@ -59,12 +59,22 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     }
   });
   socket.on('gameOver',function(score,oppScore,didWin){
-    $scope.score = score;
-    $scope.OppScore = oppScore;
+    $rootScope.userScore = score;
+    $rootScope.oppScore = oppScore;
+    $scope.score = $rootScope.userScore;
+    $scope.OppScore = $rootScope.oppScore;
     if(didWin == 1){
-      alert("You won!");
+    $ngBootbox.alert('You won!')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('gamePrepare',{});
+      });
     }else{
-      alert("You lose :(");
+    $ngBootbox.alert('You lose :(')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('gamePrepare',{});
+      });
     }
   });
 
@@ -77,7 +87,8 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
-
+$rootScope.userScore = 0;
+$rootScope.oppScore = 0;
   $scope.username  = $stateParams.myParam.username;
 
     $scope.showParticles = true;
@@ -118,6 +129,11 @@ simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
+
+      $rootScope.userScore = score;
+      $rootScope.oppScore = oppScore;
+      $scope.score = $rootScope.userScore;
+      $scope.OppScore = $rootScope.oppScore;
 
   $scope.maxSea = 8
   $scope.sea = [];
@@ -246,13 +262,13 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   });
 });
 
-simpleControllers.controller('LandingCtrl', function($state,$scope, socket) {
+simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBootbox) {
   socket.on('connected', function(connected){
     $scope.online = connected.numUsers;
   })
-
   //Game start here
   $scope.playButton = function() {
+    if($scope.username.length<=0)return;
   $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
   };
   $scope.online = 0;

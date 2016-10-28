@@ -1,4 +1,4 @@
-var app = angular.module('sampleApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop']);
+var app = angular.module('sampleApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
 app.factory('socket', function (socketFactory) {
   var myIoSocket = io.connect('http://localhost:8080');
 
