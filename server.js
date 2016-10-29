@@ -51,26 +51,27 @@ io.on('connection',function(socket){
 
   console.log('user '+socketId+' connected | ' );
 
-  socket.on('joinGame',function(playerName){
-    if(gameRooms.length === 0){
-      gameRooms.push(new Game(io));
-      gameRooms[0].join(socket,playerName);
-    }else{
-      var needNewRoom = true;
-      for(var i=0; i< gameRooms.length;i++){
-        var game = gameRooms[i];
-        if(!game.isFull()){
-          game.join(socket,playerName);
-          needNewRoom = false;
-          break;
-        }
-      }
-      if(needNewRoom){
-        gameRooms.push(new Game(io));
-        gameRooms[gameRooms.length-1].join(socket,playerName);
-      }
-    }
-  });
+    // FIXME: Deprecated
+  // socket.on('joinGame',function(playerName){
+  //   if(gameRooms.length === 0){
+  //     gameRooms.push(new Game(io));
+  //     gameRooms[0].join(socket,playerName);
+  //   }else{
+  //     var needNewRoom = true;
+  //     for(var i=0; i< gameRooms.length;i++){
+  //       var game = gameRooms[i];
+  //       if(!game.isFull()){
+  //         game.join(socket,playerName);
+  //         needNewRoom = false;
+  //         break;
+  //       }
+  //     }
+  //     if(needNewRoom){
+  //       gameRooms.push(new Game(io));
+  //       gameRooms[gameRooms.length-1].join(socket,playerName);
+  //     }
+  //   }
+  // });
 
   socket.on('disconnect',function(){
       removeRoom(socketId);
@@ -103,7 +104,9 @@ io.on('connection',function(socket){
     })
 
     socket.on('joinRoom', function (room, name) {
-        roomList[room.hostId].join(socket, name);
+        var _room = roomList[room.hostId];
+        console.log(_room);
+        _room.game.join(socket, name);
     })
 
 

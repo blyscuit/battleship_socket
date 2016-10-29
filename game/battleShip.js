@@ -16,7 +16,7 @@ var Game = function(io){
   var playerSubmit = 0;
   var shot = [];
   var shotAt = [];
-  var turn = Math.floor(Math.random() * 2) + 0; //random 0-1
+  var turn = Math.floor(Math.random() * 2); //random 0-1
   var playerScore = [];
   var playerLife = [];
   var boardStatus;
@@ -64,6 +64,9 @@ var Game = function(io){
         startTimeTicking();
       });
     }
+
+
+
     function join(socket,playerName){
       socket.join(gameId);
       playerCount++;
