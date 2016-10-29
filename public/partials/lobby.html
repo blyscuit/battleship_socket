@@ -1,6 +1,6 @@
 <div particles-drv>
 </div>
-<div class="container text-center padding80 border-top" id="1" style="position:absolute;">
+<div class="container text-center padding80 border-top" id="1" style="position: relative">
     <h2 class="uppercase clip">Box.BattleShip()</h2>
     <h3 class="clip">People online {{online}}</h3>
     <h3>LOBBY</h3>
@@ -9,11 +9,12 @@
     <br><br>
     <button class="center" ng-click="createRoom()">Create Room</button>
 
-    <ul>
-        <li ng-repeat="room in rooms" ng-click="joinRoom(room)">{{room.hostName}}</li>
+    <ul class="lobby-list text-left">
+        <li ng-repeat="room in rooms" ng-click="joinRoom(room)">
+            <div>
+                <span class="badge"> join </span> {{room.hostName}}
+            </div>
+        </li>
     </ul>
-
-
-
 
 </div>
