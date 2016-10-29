@@ -35,7 +35,7 @@ server.listen(port, function(){
 var gameRooms = [];
 var numConnections = 0;
 
-var roomList = [];
+var roomList = {};
 
 //socket
 
@@ -73,28 +73,37 @@ io.on('connection',function(socket){
   });
 
   socket.on('disconnect',function(){
-      removeRoom(socket.room);
+      removeRoom(socketId);
     io.emit('connected', { numUsers: --numConnections });
     console.log('user '+socketId+' disconnected');
 
   });
 
     socket.on('createGameRoom', function (hostName) {
+        var game = new Game(io);
+        game.join(socket, hostName);
+
         var room = {
             hostName: hostName,
-            hostId: socketId
+            hostId: socketId,
+            game: game
         };
 
         // remove previous room created by this socket
         // just in case the socket somehow create multiple room
-        removeRoom(socket.room);
+        removeRoom(socketId);
 
         // assign the new room to this socket
-        socket.room = room;
+        roomList[socketId] = room;
 
-        roomList.push(room);
         notifyRoomListUpdated();
+        
+        io.emit('roomCreated', room)
 
+    })
+
+    socket.on('joinRoom', function (room, name) {
+        roomList[room.hostId].join(socket, name);
     })
 
 
@@ -110,14 +119,10 @@ io.on('connection',function(socket){
      * Remove a room from roomList
      * Do nothing if room not found or is undefined
      * Will notify client of roomList changes
-     * @param room - the room to be removed
+     * @param hostId - the room to be removed
      */
-    function removeRoom(room) {
-        if (room === 'undefined') return;
-        var index = roomList.indexOf(room);
-        if (index > -1) {
-            roomList.splice(index, 1);
-        }
+    function removeRoom(hostId) {
+        delete roomList[hostId];
         notifyRoomListUpdated()
     }
 

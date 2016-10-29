@@ -259,6 +259,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, socket){
 
     $scope.rooms = [];
 
+
     socket.on('connected', function(c){
         $scope.online = c.numUsers;
         $scope.rooms = c.roomList;
@@ -269,12 +270,22 @@ simpleControllers.controller('LobbyController', function($state,$scope, socket){
     })
 
     $scope.createRoom = function () {
-        // Guard against empty name
         var username = $scope.username;
+        // Guard against empty name
         if (typeof username === 'undefined' || username.length <= 0)return;
-        // $state.go('gameWait',{ myParam:{username:$scope.username,online:$scope.online}});
-
         socket.emit('createGameRoom', username);
+        socket.on('roomCreated', function (room) {
+            $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
+        })
+    }
+    
+    $scope.joinRoom = function (room) {
+        console.log(room);
+        var username = $scope.username;
+        // Guard against empty name
+        if (typeof username === 'undefined' || username.length <= 0)return;
+        socket.emit("joinRoom", room, username);
+        $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
     }
 
 });

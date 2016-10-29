@@ -10,7 +10,7 @@
     <button class="center" ng-click="createRoom()">Create Room</button>
 
     <ul>
-        <li ng-repeat="room in rooms">{{room.hostName}}</li>
+        <li ng-repeat="room in rooms" ng-click="joinRoom(room)">{{room.hostName}}</li>
     </ul>
 
 
