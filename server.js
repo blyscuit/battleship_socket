@@ -122,6 +122,7 @@ io.on('connection',function(socket){
      * @param hostId - the room to be removed
      */
     function removeRoom(hostId) {
+        // TODO: error if host left while placing ships.
         delete roomList[hostId];
         notifyRoomListUpdated()
     }
