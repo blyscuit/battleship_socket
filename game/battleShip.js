@@ -21,21 +21,37 @@ var Game = function(io){
   var boardStatus;
   var maxLife = 16;
 
-  for (var k = 0; k < maxPlayer; k++) {
-    var sea1 = []
-    for(var i = 0; i<maxSea;i++){
-      var a = [];
-      for(var j = 0; j<maxSea;j++){
-        a.push(0);
+  function setUpRoom(){
+    playerScore = [];
+    for (var k = 0; k < maxPlayer; k++) {
+      playerScore.push(0);
       }
-      sea1.push(a);
-    }
-    sea.push(sea1);
-    shot.push([]);
-    shotAt.push([]);
-    playerScore.push(0);
-    playerLife.push(0);
+    setUpGame();
   }
+
+  function setUpGame(){
+    sea = [];
+    shot = [];
+    shotAt = [];
+    playerLife = [];
+      for (var k = 0; k < maxPlayer; k++) {
+        var sea1 = []
+        for(var i = 0; i<maxSea;i++){
+          var a = [];
+          for(var j = 0; j<maxSea;j++){
+            a.push(0);
+          }
+          sea1.push(a);
+        }
+        sea.push(sea1);
+        shot.push([]);
+        shotAt.push([]);
+        playerLife.push(0);
+      }
+
+  }
+
+
 
   var myTimer = new Timer({
     tick    : 1, // how many sec per tick
@@ -92,7 +108,6 @@ var Game = function(io){
             io.to(hostId).emit('gameReady',true);
             io.to(joinId).emit('gameReady',false);
           }
-
           startTimeTicking();
         }
       });
@@ -163,6 +178,7 @@ var Game = function(io){
       });
 
       if(playerCount === 2){
+        setUpRoom();
         joinName = playerName;
         joinId = socket.id;
         console.log("joining : %s : %s",joinId,playerName);
