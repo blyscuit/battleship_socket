@@ -10,7 +10,7 @@ var morgan = require('morgan'); 		// log requests to the console (express4)
 var bodyParser = require('body-parser'); 	// pull information from HTML POST (express4)
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 
-//import object
+//import Game
 var Game = require('./game/battleShip');
 
 // configuration ===============================================================
@@ -31,8 +31,6 @@ server.listen(port, function(){
   console.log("App listening on port " + port);
 });
 
-//game objects
-var gameRooms = [];
 var numConnections = 0;
 
 var roomList = {};
@@ -43,42 +41,19 @@ io.on('connection',function(socket){
 
     var socketId = socket.id;
 
-  io.emit('connected', {
+    io.emit('connected', {
       numUsers: ++numConnections,
       roomList: roomList
-  });
+    });
 
+    console.log('user '+socketId+' connected | ' );
 
-  console.log('user '+socketId+' connected | ' );
-
-    // FIXME: Deprecated
-  // socket.on('joinGame',function(playerName){
-  //   if(gameRooms.length === 0){
-  //     gameRooms.push(new Game(io));
-  //     gameRooms[0].join(socket,playerName);
-  //   }else{
-  //     var needNewRoom = true;
-  //     for(var i=0; i< gameRooms.length;i++){
-  //       var game = gameRooms[i];
-  //       if(!game.isFull()){
-  //         game.join(socket,playerName);
-  //         needNewRoom = false;
-  //         break;
-  //       }
-  //     }
-  //     if(needNewRoom){
-  //       gameRooms.push(new Game(io));
-  //       gameRooms[gameRooms.length-1].join(socket,playerName);
-  //     }
-  //   }
-  // });
-
-  socket.on('disconnect',function(){
+    socket.on('disconnect',function(){
       removeRoom(socketId);
     io.emit('connected', { numUsers: --numConnections });
     console.log('user '+socketId+' disconnected');
 
-  });
+    });
 
     socket.on('createGameRoom', function (hostName) {
         var game = new Game(io);
@@ -98,7 +73,7 @@ io.on('connection',function(socket){
         roomList[socketId] = room;
 
         notifyRoomListUpdated();
-        
+
         io.emit('roomCreated', room)
 
     })

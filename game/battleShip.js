@@ -6,9 +6,7 @@ var Game = function(io){
   var playerCount = 0;
   var gameId = uuid.v4();
   var maxSea = 8;
-  var hostName = "player1";
   var hostId = 0;
-  var joinName = "player2";
   var joinId = 0;
   var inProgress = false;
   var sea = [];
@@ -19,8 +17,18 @@ var Game = function(io){
   var turn = Math.floor(Math.random() * 2); //random 0-1
   var playerScore = [];
   var playerLife = [];
-  var boardStatus;
   var maxLife = 16;
+
+  var gamePlayer = {
+    host: {
+      name: "",
+      id: ""
+    },
+    guest: {
+      name: "",
+      id: ""
+    }
+  };
 
   for (var k = 0; k < maxPlayer; k++) {
     var sea1 = []
@@ -167,16 +175,16 @@ var Game = function(io){
       });
 
       if(playerCount === 2){
-        joinName = playerName;
+        gamePlayer.guest.name = playerName;
         joinId = socket.id;
         console.log("joining : %s : %s",joinId,playerName);
-        io.to(hostId).emit('startGame',joinName);
-        io.to(joinId).emit('startGame',hostName);
+        io.to(hostId).emit('startGame',gamePlayer.guest.name);
+        io.to(joinId).emit('startGame',gamePlayer.host.name);
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;
       }else{
-        hostName = playerName;
+        gamePlayer.host.name = playerName;
         hostId = socket.id;
         console.log("joining : %s : %s",hostId,playerName);
       }

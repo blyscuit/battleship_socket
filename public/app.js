@@ -3,7 +3,7 @@ var app = angular.module('mainApp', ['ngAnimate','ui.bootstrap','ui.router','sim
 
 // socket
 app.factory('socket', function (socketFactory) {
-  var myIoSocket = io.connect('http://192.168.1.10:8080');
+  var myIoSocket = io.connect('localhost:8080');
   socket = socketFactory({
     ioSocket: myIoSocket
   });
