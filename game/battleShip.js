@@ -150,6 +150,7 @@ startTimeTicking();
               playerLife[0]+=1;
               if(playerLife[0]>=maxLife){
                 playerScore[0]++;
+                turn = 3;
                 io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
                 io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
               }
@@ -167,6 +168,7 @@ startTimeTicking();
               playerLife[1]+=1;
               if(playerLife[1]>=maxLife){
                 playerScore[1]++;
+                turn = 3;
                 io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
                 io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
               }
