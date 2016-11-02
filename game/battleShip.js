@@ -1,5 +1,7 @@
 var uuid = require('node-uuid');
 var Timer = require('timer.js');
+var ImagesClient = require('google-images');
+var client = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'AIzaSyAOCzQYhZw10lh2-Qx16Rrp4iNLh7tdZ00');
 
 var Game = function(io){
   var playerCount = 0;
@@ -109,10 +111,21 @@ var Game = function(io){
             io.to(hostId).emit('gameReady',true);
             io.to(joinId).emit('gameReady',false);
           }
-          startTimeTicking();
-        }
-      });
-
+          client.search(hostName)
+  .then(function (images) {
+    io.to(hostId).emit('myImage',images[0].url);
+    io.to(joinId).emit('yourImage',images[0].url);
+    console.log("host image = "+images[0].url);
+  });
+  client.search(joinName)
+    .then(function (images) {
+      io.to(joinId).emit('myImage',images[0].url);
+      io.to(hostId).emit('yourImage',images[0].url);
+      console.log("join image = "+images[0].url);
+    });
+startTimeTicking();
+}
+});
       socket.on('disconnect',function(){
         playerCount--;
         socket.broadcast.to(gameId).emit('playerQuit');
