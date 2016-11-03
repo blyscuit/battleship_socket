@@ -73,6 +73,7 @@ var GameModule = function () {
         socket.on('createGameRoom', function (hostName) {
 
             // generate a unique id for this game
+            //noinspection JSUnresolvedFunction
             var gameId = uuid.v4();
 
             var game = GameFactory.newInstance(gameId,socket,hostName);
@@ -117,9 +118,9 @@ var GameModule = function () {
 
         /**
          * Create a new room with Host's Socket, Name, and ID
+         * @param gameId - unique game id
          * @param socket - host's socket
          * @param name - host's name
-         * @param id - host's id
          */
         var newInstance = function(gameId, socket, name) {
 
@@ -254,7 +255,7 @@ var GameModule = function () {
              */
             var getRoomParams = function () {
                 return {seaWidth: SEA_WIDTH, seaHeight: SEA_HEIGHT};
-            }
+            };
 
             /* =============================================== *
                 helper functions
@@ -276,7 +277,7 @@ var GameModule = function () {
              */
             (function randomPlayingPlayer() {
                 playingPlayer = Math.floor(Math.random() * players.length);
-            })()
+            })();
 
             /**
              * change turn
@@ -301,7 +302,7 @@ var GameModule = function () {
                     var sea = player.sea;
 
                     for (var i = 0; i < atLocationArray.length; i++) {
-                        var num = atLocationArray[i]
+                        var num = atLocationArray[i];
                         var row = num[0];
                         var column = num[1];
                         var shipNum = num[2];
@@ -355,18 +356,16 @@ var GameModule = function () {
                         io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 0);
 
                     } else {
-                        // nextTurn();
+                        nextTurn();
                     }
 
-                })
+                });
                 
                 socket.on('requestImages', function () {
                     var opponent = players[(player.index+1)%players.length];
                     socket.emit('updateImages', player.imgUrl, opponent.imgUrl);
                 })
-                
-                
-                
+
             }
 
             /**
@@ -399,7 +398,6 @@ var GameModule = function () {
                 })
             }();
 
-
             /* ============================================================================== *
              Self-involved Functions (Init)
              * ============================================================================== */
@@ -407,21 +405,14 @@ var GameModule = function () {
             (function init() {
                 // add the host to the game
                 addPlayer(socket, name);
-
-
             })();
-
 
             return {
                 join: addPlayer,
                 start: restartGame
             };
 
-
-
         };
-
-
 
         // expose function of GameFactory
         return {newInstance: newInstance};

@@ -50,7 +50,6 @@ io.on('connection',function(socket){
     });
 
 
-
     io.on("createGameRoom", function (name) {
         console.log(name);
     })
