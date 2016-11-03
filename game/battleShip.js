@@ -1,4 +1,16 @@
+/**
+ * TODO:
+ *  - Timer
+ *  - Restart after winning
+ *
+ */
+
+
 var uuid = require('node-uuid');
+
+// Google Image
+var ImagesClient = require('google-images');
+var googleImageClient = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'AIzaSyAOCzQYhZw10lh2-Qx16Rrp4iNLh7tdZ00');
 
 var GameModule = function () {
 
@@ -178,12 +190,19 @@ var GameModule = function () {
                     sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
                     life: -1,
                     index: players.length,
-                    score: 0
+                    score: 0,
+                    imgUrl: ""
                 };
+
+                googleImageClient.search(name).then(function (images) {
+                    player.imgUrl = images[0].url;
+                    io.to(player.socket.id).emit('shouldRequestImages');
+                });
 
                 setupPlayerSocketFunctions(player);
                 players.push(player);
                 console.log('added');
+
             };
 
             /**
@@ -340,6 +359,13 @@ var GameModule = function () {
                     }
 
                 })
+                
+                socket.on('requestImages', function () {
+                    var opponent = players[(player.index+1)%players.length];
+                    socket.emit('updateImages', player.imgUrl, opponent.imgUrl);
+                })
+                
+                
                 
             }
 

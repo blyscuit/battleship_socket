@@ -79,12 +79,15 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     }
   });
 
-  socket.on('myImage',function(url){
-    $scope.myImage = url
-  });
-  socket.on('yourImage',function(url){
-    $scope.yourImage = url
-  });
+    socket.emit('requestImages');
+    socket.on('shouldRequestImages', function () {
+        socket.emit('requestImages');
+    });
+    socket.on('updateImages', function (myImgUrl, oppImgUrl) {
+        $scope.myImage = myImgUrl;
+        $scope.yourImage = oppImgUrl;
+    });
+
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
