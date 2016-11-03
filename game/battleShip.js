@@ -95,6 +95,7 @@ var GameModule = function () {
 
             // since the each room always have the host
             // we know that this is the second player, so we should start the game!
+            _room.game.start();
 
         })
 
@@ -130,8 +131,8 @@ var GameModule = function () {
              * Keep tracks of the players
              *
              * sea - is a 2 dimensional array containing the player's sea (ship placement)
-             * shots - array of shots (object containing x and y location) this player has made
-             *
+             * shots - array of shots (array containing x and y location) this player has made
+             * index - player's index in players array
              * [{
              *      socket: Object{socket.io},
              *
@@ -146,11 +147,13 @@ var GameModule = function () {
              *              ],
              *
              *      shots: [
-             *                  {x, y},
-             *                  {x, y}
+             *                  [x, y],
+             *                  [x, y]
              *             ],
              *
-             *      life: 0
+             *      life: 0,
+             *
+             *      index: int
              *
              * }]
              */
@@ -170,20 +173,27 @@ var GameModule = function () {
                     socket: socket,
                     name: name,
                     shots: [],
+                    gotShots: [],
                     sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
-                    life: MAX_LIFE
+                    life: MAX_LIFE,
+                    index: players.length
                 };
 
                 setupPlayerSocketFunctions(player);
                 players.push(player);
+                console.log('added');
             };
 
             /**
              * This function should be run once both user has joined.
              * It reset the game state and start player's planning process
              */
-            var restart = function() {
+            var restartGame = function() {
+
+                numberOfPlayerSubmittedPlan = 0;
+
                 // reset game parameters for each player
+                // also initiate ship-placement
                 for (var i = 0; i < players.length; i++) {
 
                     var player = players[i];
@@ -193,10 +203,14 @@ var GameModule = function () {
                     player.shots = [];
                     player.life = MAX_LIFE;
 
+                    // tell each player to start ship-placing
+                    // also give the opponent's name (this function is over-complicated because we only have 2 players
+                    // but this is to keep as much generality and future proofing as possible)
+                    io.to(player.socket.id).emit('startGame', players[(i+1)%players.length].name);
+                    console.log('sent');
+
                 }
-
-
-
+                console.log('game starting')
             };
 
             var startGame = function() {
@@ -285,7 +299,31 @@ var GameModule = function () {
                 })
                 
                 socket.on('submitMove', function (move) {
+
+                    var opponent = players[(player.index+1)%players.length];
+
                     console.log(move);
+
+                    var row = move[0];
+                    var column = move[1];
+
+                    var shots = player.shots;
+                    var opponentSea = opponent.sea;
+
+                    var hit = 1; // miss
+
+                    // if we hit a target
+                    if (opponentSea[row][column]>0) {
+                        hit = 2; // hit
+                    }
+
+                    shots.push([row, column, hit]);
+
+                    io.to(player.socket.id).emit('result', player.shots);
+                    io.to(opponent.socket.id).emit('update map', player.shots);
+
+                    nextTurn();
+
                 })
                 
             }
@@ -305,7 +343,7 @@ var GameModule = function () {
 
             return {
                 join: addPlayer,
-                start: restart
+                start: restartGame
             };
 
 

@@ -19,7 +19,8 @@ app.config(['$stateProvider', '$urlRouterProvider',
       .state('lobby', {
           url:'/',
           templateUrl: '/partials/lobby.html',
-          controller: 'LobbyController'
+          controller: 'LobbyController',
+          params:{myParam: null}
       })
       .state('landing', {
             url: '/landing',

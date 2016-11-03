@@ -255,7 +255,7 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 });
 
 
-simpleControllers.controller('LobbyController', function($state,$scope, socket){
+simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, socket){
 
     $scope.rooms = [];
 
@@ -284,8 +284,15 @@ simpleControllers.controller('LobbyController', function($state,$scope, socket){
         var username = $scope.username;
         // Guard against empty name
         if (typeof username === 'undefined' || username.length <= 0)return;
+
+        socket.on('startGame',function(name){
+            $rootScope.opponent = name;
+            $rootScope.you = username;
+            $state.go('gamePrepare',{});
+        });
+
         socket.emit("joinRoom", room, username);
-        $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
+
     }
 
 });
