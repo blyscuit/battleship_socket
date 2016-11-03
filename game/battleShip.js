@@ -217,10 +217,13 @@ var GameModule = function () {
                 // random who play first
                 randomPlayingPlayer();
 
+                console.log(players[playingPlayer].name + " start first!");
+
                 // send turn state for every player
                 for (var i = 0; i < players.length; i++) {
                     var player = players[i];
                     var isMyTurn = (i === playingPlayer);
+                    console.log(i+"|"+player+"|"+isMyTurn+" ||| "+player.name);
                     io.to(player.socket.id).emit('gameReady', isMyTurn);
                 }
 
@@ -240,12 +243,12 @@ var GameModule = function () {
                 helper functions
              * =============================================== */
 
-            function createEmptySea(widht, height) {
+            function createEmptySea(width, height) {
                 var sea = [];
                 for (var j = 0; j < height; j++) {
                     // create a zero-filled array of SEA_WIDTH length
                     sea.push(
-                        Array.apply(null, Array(widht)).map(Number.prototype.valueOf, 0));
+                        Array.apply(null, new Array(width)).map(Number.prototype.valueOf, 0));
                 }
                 return sea;
             }
@@ -254,7 +257,7 @@ var GameModule = function () {
              * random the current player's turn
              */
             function randomPlayingPlayer() {
-                playingPlayer = Math.random() * players.length;
+                playingPlayer = Math.floor(Math.random() * players.length);
             }
 
             /**
@@ -300,9 +303,10 @@ var GameModule = function () {
                 
                 socket.on('submitMove', function (move) {
 
-                    var opponent = players[(player.index+1)%players.length];
+                    // if it is not this player's turn, do nothing
+                    if (player.index !== playingPlayer) return;
 
-                    console.log(move);
+                    var opponent = players[(player.index+1)%players.length];
 
                     var row = move[0];
                     var column = move[1];
