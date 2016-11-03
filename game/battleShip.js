@@ -115,7 +115,6 @@ var GameModule = function () {
                 Instance's Variables
              * ============================================================================== */
 
-            const MAX_LIFE = 16;
             const SEA_WIDTH = 8; // x
             const SEA_HEIGHT = 8; // y
 
@@ -151,9 +150,11 @@ var GameModule = function () {
              *                  [x, y]
              *             ],
              *
-             *      life: 0,
+             *      life: int,
              *
-             *      index: int
+             *      index: int,
+             *
+             *      score: int
              *
              * }]
              */
@@ -175,8 +176,9 @@ var GameModule = function () {
                     shots: [],
                     gotShots: [],
                     sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
-                    life: MAX_LIFE,
-                    index: players.length
+                    life: -1,
+                    index: players.length,
+                    score: 0
                 };
 
                 setupPlayerSocketFunctions(player);
@@ -201,13 +203,12 @@ var GameModule = function () {
                     // reset player
                     player.sea = createEmptySea(SEA_WIDTH, SEA_HEIGHT);
                     player.shots = [];
-                    player.life = MAX_LIFE;
+                    player.life = -1; // life will be set after the player submit a plan
 
                     // tell each player to start ship-placing
                     // also give the opponent's name (this function is over-complicated because we only have 2 players
                     // but this is to keep as much generality and future proofing as possible)
                     io.to(player.socket.id).emit('startGame', players[(i+1)%players.length].name);
-                    console.log('sent');
 
                 }
                 console.log('game starting')
@@ -292,14 +293,17 @@ var GameModule = function () {
 
                     }
 
+                    setPlayerLife(player);
+
                     io.to(socket.id).emit('receivedPlan');
+                    console.log("plan receive");
 
                     numberOfPlayerSubmittedPlan += 1;
                     if (numberOfPlayerSubmittedPlan === players.length) {
                         startGame();
                     }
 
-                })
+                });
                 
                 socket.on('submitMove', function (move) {
 
@@ -319,6 +323,7 @@ var GameModule = function () {
                     // if we hit a target
                     if (opponentSea[row][column]>0) {
                         hit = 2; // hit
+                        opponent.life -= 1;
                     }
 
                     shots.push([row, column, hit]);
@@ -326,11 +331,52 @@ var GameModule = function () {
                     io.to(player.socket.id).emit('result', player.shots);
                     io.to(opponent.socket.id).emit('update map', player.shots);
 
-                    nextTurn();
+                    if (opponent.life <= 0) {
+                        // if opponent died
+                        // prevent further move
+                        playingPlayer = -1;
+                        player.score += 1;
+
+                        io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 1);
+                        io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 0);
+
+                    } else {
+                        // nextTurn();
+                    }
 
                 })
                 
             }
+
+            /**
+             * count the total number of cells allocated to ship
+             * and use that as player's life
+             * @param player
+             */
+            var setPlayerLife = function() {
+                // cache
+                var defaultLife;
+
+                return (function(player) {
+                    // if not already calculated
+                    if (typeof defaultLife === 'undefined') {
+                        var sea = player.sea;
+                        var life = 0;
+                        for (var i = 0; i < sea.length; i++) {
+                            var row = sea[i];
+                            for (var j = 0; j < row.length; j++) {
+                                // if there is a ship at that location,
+                                // increment life
+                                if (row[j]>0) {
+                                    life += 1;
+                                }
+                            }
+                        }
+                        defaultLife = life
+                    }
+                    player.life = defaultLife;
+                })
+            }();
 
 
             /* ============================================================================== *
@@ -352,7 +398,7 @@ var GameModule = function () {
 
 
 
-        }
+        };
 
 
 
