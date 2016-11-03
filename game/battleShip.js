@@ -1,7 +1,9 @@
 /**
  * TODO:
- *  - Timer
  *  - Restart after winning
+ * FIXME:
+ *  - Score only display for myself
+ *  - Turn name display wrongly if timer end/ still pretty buggy
  *
  */
 
@@ -11,6 +13,9 @@ var uuid = require('node-uuid');
 // Google Image
 var ImagesClient = require('google-images');
 var googleImageClient = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'AIzaSyAOCzQYhZw10lh2-Qx16Rrp4iNLh7tdZ00');
+
+// Timer
+var Timer = require('timer.js');
 
 var GameModule = function () {
 
@@ -173,6 +178,38 @@ var GameModule = function () {
              */
             var players = [];
 
+
+            /* ============================================================================== *
+                Timer
+             * ============================================================================== */
+
+            var myTimer = new Timer({
+                tick    : 0.5, // how many sec per tick
+                ontick  : function(ms) {
+                    io.sockets.in(gameId).emit('timer', { time: ms });
+                    console.log(ms + ' ms left') },  //ms <-> sec
+                onstart : function() { console.log('timer started') },
+                onstop  : function() { console.log('timer stop') },
+                onpause : function() { console.log('timer set on pause') },
+                onend   : function() { console.log('timer ended normally') }
+            });
+
+            /**
+             * reset and start the timer
+             */
+            function resetAndStartTimer(){
+                myTimer.stop();
+                myTimer.start(11).on('end',function(){
+                    io.sockets.in(gameId).emit('timer', { time: 10000 });
+                    resetAndStartTimer();
+                    nextTurn();
+                });
+            }
+
+            function stopTimer() {
+                myTimer.stop();
+            }
+
             /* ============================================================================== *
                 Functions
              * ============================================================================== */
@@ -183,6 +220,8 @@ var GameModule = function () {
              * @param name
              */
             var addPlayer = function (socket, name) {
+                socket.join(gameId);
+
                 var player = {
                     socket: socket,
                     name: name,
@@ -234,8 +273,11 @@ var GameModule = function () {
                 console.log('game starting')
             };
 
+            /**
+             * Start the game AFTER all player submitted plan
+             */
             var startGame = function() {
-
+                resetAndStartTimer();
                 console.log(players[playingPlayer].name + " start first!");
 
                 // send turn state for every player
@@ -352,11 +394,13 @@ var GameModule = function () {
 
                     if (opponent.life <= 0) {
                         // if opponent died
+                        stopTimer();
                         io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 1);
                         io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 0);
 
                     } else {
                         nextTurn();
+                        resetAndStartTimer();
                     }
 
                 });
