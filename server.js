@@ -39,6 +39,7 @@ gameModule.init(io);
 io.on('connection',function(socket){
     io.emit('connected', {
         numUsers: ++numConnections,
+        roomList: gameModule.getRoomList()
     });
 
     gameModule.bindSocket(socket);

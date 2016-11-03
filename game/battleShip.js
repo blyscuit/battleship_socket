@@ -33,6 +33,27 @@ var GameModule = function () {
         return roomList;
     };
 
+    // ==========================================================
+    // helper functions
+    // ==========================================================
+
+    function notifyRoomListUpdated() {
+        io.emit('roomListUpdated', roomList);
+    }
+
+    /**
+     * Remove a room from roomList
+     * Do nothing if room not found or is undefined
+     * Will notify client of roomList changes
+     * @param hostId - the room to be removed
+     */
+    function removeRoom(hostId) {
+        delete roomList[hostGameMap[hostId]];
+        notifyRoomListUpdated()
+    }
+
+    // ==========================================================
+
     var bindSocket = function (socket) {
 
         console.log("BattleShipSocket: a user has joined the game: "+socket.id);
@@ -59,7 +80,7 @@ var GameModule = function () {
             hostGameMap[socket.id] = gameId;
 
             // keep track of the new room
-            roomList[socket.id] = room;
+            roomList[gameId] = room;
 
             notifyRoomListUpdated();
 
@@ -68,30 +89,14 @@ var GameModule = function () {
         });
 
         socket.on('joinRoom', function (room, name) {
+            // map client-side room doesn't contain the game object so we map it to server-side room
             var _room = roomList[room.gameId];
-            console.log(_room);
             _room.game.join(socket, name);
+
+            // since the each room always have the host
+            // we know that this is the second player, so we should start the game!
+
         })
-
-
-        // ==========================================================
-        // helper functions
-        // ==========================================================
-
-        function notifyRoomListUpdated() {
-            io.emit('roomListUpdated', roomList);
-        }
-
-        /**
-         * Remove a room from roomList
-         * Do nothing if room not found or is undefined
-         * Will notify client of roomList changes
-         * @param hostId - the room to be removed
-         */
-        function removeRoom(hostId) {
-            delete roomList[hostGameMap[hostId]];
-            notifyRoomListUpdated()
-        }
 
     };
 
@@ -152,17 +157,6 @@ var GameModule = function () {
             var players = [];
 
             /* ============================================================================== *
-                Self-involved Functions (Init)
-             * ============================================================================== */
-
-            (function init() {
-                // add the host to the game
-                addPlayer(socket, name);
-
-
-            })();
-
-            /* ============================================================================== *
                 Functions
              * ============================================================================== */
 
@@ -178,16 +172,15 @@ var GameModule = function () {
                     shots: [],
                     sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
                     life: MAX_LIFE
-                }
+                };
 
                 setupPlayerSocketFunctions(player);
-
-
                 players.push(player);
             };
 
             /**
-             * Must run after both player joined
+             * This function should be run once both user has joined.
+             * It reset the game state and start player's planning process
              */
             var restart = function() {
                 // reset game parameters for each player
@@ -201,6 +194,8 @@ var GameModule = function () {
                     player.life = MAX_LIFE;
 
                 }
+
+
 
             };
 
@@ -296,10 +291,22 @@ var GameModule = function () {
             }
 
 
+            /* ============================================================================== *
+             Self-involved Functions (Init)
+             * ============================================================================== */
+
+            (function init() {
+                // add the host to the game
+                addPlayer(socket, name);
 
 
+            })();
 
 
+            return {
+                join: addPlayer,
+                start: restart
+            };
 
 
 
