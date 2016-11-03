@@ -187,7 +187,8 @@ var GameModule = function () {
                 tick    : 0.5, // how many sec per tick
                 ontick  : function(ms) {
                     io.sockets.in(gameId).emit('timer', { time: ms });
-                    console.log(ms + ' ms left') },  //ms <-> sec
+                    // console.log(ms + ' ms left')
+                },  //ms <-> sec
                 onstart : function() { console.log('timer started') },
                 onstop  : function() { console.log('timer stop') },
                 onpause : function() { console.log('timer set on pause') },
