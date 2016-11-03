@@ -6,6 +6,8 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.username = $rootScope.you;
   $scope.sea = $stateParams.myParam.sea;
   $scope.maxSea = $stateParams.myParam.maxSea;
+  $scope.myImage = $stateParams.myParam.myImg;
+  $scope.yourImage = $stateParams.myParam.yourImg;
 
   $scope.gameTime = ""+0;
   socket.on('timer',function(data){
@@ -33,6 +35,10 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
 
   $scope.shootAt = function(j,i){
     socket.emit("submitMove",[i,j]);
+  }
+
+  $scope.forfeit = function(){
+    socket.emit("forfeit");
   }
 
   socket.on('result',function(shotAt){
@@ -83,6 +89,13 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   });
   socket.on('yourImage',function(url){
     $scope.yourImage = url
+  });
+  socket.on('plyerQuit',function(){
+    $ngBootbox.alert('Opponent disconnected')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('gameWait',{});
+      });
   });
 });
 
@@ -250,8 +263,8 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
   socket.on('receivedPlan',function(){
     $scope.send = true;
   });
-  socket.on('gameReady', function(_turn) {
-    $state.go('gameTurn',{ myParam:{sea:$scope.sea,maxSea:$scope.maxSea,turn:_turn}});
+  socket.on('gameReady', function(_turn,myImgage,yourImgage) {
+    $state.go('gameTurn',{ myParam:{sea:$scope.sea,maxSea:$scope.maxSea,turn:_turn,myImg:myImgage,yourImg:yourImgage}});
   });
 
   socket.on('updatechat', function(data,datadata) {

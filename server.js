@@ -10,7 +10,7 @@ var morgan = require('morgan'); 		// log requests to the console (express4)
 var bodyParser = require('body-parser'); 	// pull information from HTML POST (express4)
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 
-//import object
+// import object
 var Game = require('./game/battleShip');
 
 // configuration ===============================================================
@@ -31,11 +31,11 @@ server.listen(port, function(){
   console.log("App listening on port " + port);
 });
 
-//game objects
+// game objects
 var gameRooms = [];
 var numConnections = 0;
 
-//socket
+// socket
 
 io.on('connection',function(socket){
   io.emit('connected', { numUsers: ++numConnections });
@@ -69,34 +69,31 @@ io.on('connection',function(socket){
 
 });
 
+//
+// socket.on('chat message', function(msg){
+//    io.emit('chat message', msg);
+//    console.log('message: ' + msg);
+//  });
 
-
-  //
-  // socket.on('chat message', function(msg){
-  //    io.emit('chat message', msg);
-  //    console.log('message: ' + msg);
-  //  });
-
-  //
-  // socket.on('finishMove', function(move,callback){
-  //   var movObj = JSON.parse(move);
-  //   socket.emit('move', movObj.type + movObj.pos);
-  // });
-  //
-  // socket.on('updateBoard', function(board){
-  //   var boardObj = JSON.parse(board);
-  //   socket.emit('updateBoard', boardObj);
-  // });
-  //
-  // socket.on('changeState', function(state){
-  //   var stateObj = JSON.parse(state);
-  //   console.log(mongoose.load(state));
-  // });
-  //
-  // socket.on('updateOnline', function(){
-  //   io.emit('online', io.socket.client().length());
-  // });
-
+//
+// socket.on('finishMove', function(move,callback){
+//   var movObj = JSON.parse(move);
+//   socket.emit('move', movObj.type + movObj.pos);
+// });
+//
+// socket.on('updateBoard', function(board){
+//   var boardObj = JSON.parse(board);
+//   socket.emit('updateBoard', boardObj);
+// });
+//
+// socket.on('changeState', function(state){
+//   var stateObj = JSON.parse(state);
+//   console.log(mongoose.load(state));
+// });
+//
+// socket.on('updateOnline', function(){
+//   io.emit('online', io.socket.client().length());
+// });
 
 process.on('SIGINT', function() {
   var quotes = ['All those moments will be lost in time, like tears in rain. Time to die.',
@@ -104,6 +101,6 @@ process.on('SIGINT', function() {
   'Be sure and tell them ... it was only a bloody game','I know now why you cry. But it\'s something I can never do',
   'Oh no!',' I\'m sorry ... I\'m so sorry...','...heaven, I\'m in heaven ...','This is funny',
   'No! I don\'t want to die! Oh, please! I don\'t want to die! Oh, please! Don\'t make me burn in hell. Oh, please let go of me! Please don\'t kill me! Oh, don\'t kill me, please!']
-console.log('\n' + quotes[Math.floor(Math.random()*quotes.length)]);
-process.exit();
+  console.log('\n' + quotes[Math.floor(Math.random()*quotes.length)]);
+  process.exit();
 });

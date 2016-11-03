@@ -22,34 +22,40 @@ var Game = function(io){
   var playerLife = [];
   var boardStatus;
   var maxLife = 16;
+  var playerImage = [];
+  var playing = false;
 
   function setUpRoom(){
     playerScore = [];
+    playerImage = [];
     for (var k = 0; k < maxPlayer; k++) {
       playerScore.push(0);
-      }
+      playerImage.push("");
+    }
     setUpGame();
   }
 
   function setUpGame(){
+    playerSubmit = 0;
+    playing = false;
     sea = [];
     shot = [];
     shotAt = [];
     playerLife = [];
-      for (var k = 0; k < maxPlayer; k++) {
-        var sea1 = []
-        for(var i = 0; i<maxSea;i++){
-          var a = [];
-          for(var j = 0; j<maxSea;j++){
-            a.push(0);
-          }
-          sea1.push(a);
+    for (var k = 0; k < maxPlayer; k++) {
+      var sea1 = []
+      for(var i = 0; i<maxSea;i++){
+        var a = [];
+        for(var j = 0; j<maxSea;j++){
+          a.push(0);
         }
-        sea.push(sea1);
-        shot.push([]);
-        shotAt.push([]);
-        playerLife.push(0);
+        sea1.push(a);
       }
+      sea.push(sea1);
+      shot.push([]);
+      shotAt.push([]);
+      playerLife.push(0);
+    }
 
   }
 
@@ -104,32 +110,36 @@ var Game = function(io){
         io.to(socket.id).emit('receivedPlan');
         playerSubmit++;
         if(playerSubmit===maxPlayer){
+          playing = true;
           if(turn === 1){
-            io.to(hostId).emit('gameReady',false);
-            io.to(joinId).emit('gameReady',true);
+            io.to(hostId).emit('gameReady',false,playerImage[0],playerImage[1]);
+            io.to(joinId).emit('gameReady',true,playerImage[1],playerImage[0]);
           }else{
-            io.to(hostId).emit('gameReady',true);
-            io.to(joinId).emit('gameReady',false);
+            io.to(hostId).emit('gameReady',true,playerImage[0],playerImage[1]);
+            io.to(joinId).emit('gameReady',false,playerImage[1],playerImage[0]);
           }
-          client.search(hostName)
-  .then(function (images) {
-    io.to(hostId).emit('myImage',images[0].url);
-    io.to(joinId).emit('yourImage',images[0].url);
-    console.log("host image = "+images[0].url);
-  });
-  client.search(joinName)
-    .then(function (images) {
-      io.to(joinId).emit('myImage',images[0].url);
-      io.to(hostId).emit('yourImage',images[0].url);
-      console.log("join image = "+images[0].url);
-    });
-startTimeTicking();
-}
-});
+          startTimeTicking();
+        }
+      });
       socket.on('disconnect',function(){
         playerCount--;
+        myTimer.stop();
         socket.broadcast.to(gameId).emit('playerQuit');
         io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
+      });
+
+      socket.on('forfeit',function(){
+        if(socket.id == hostId){
+          playerScore[1]++;
+          io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
+          io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
+        }else if(socket.id == joinId){
+          playerScore[0]++;
+          io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
+          io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
+        }
+        myTimer.stop();
+        setUpGame();
       });
 
       //WOODS check dead around here
@@ -189,10 +199,6 @@ startTimeTicking();
         myTimer.start(10); //start timer for 10 sec;
       });
 
-      socket.on('playerQuit',function(){
-        console.log('someone quit');
-      });
-
       if(playerCount === 2){
         setUpRoom();
         joinName = playerName;
@@ -200,6 +206,26 @@ startTimeTicking();
         console.log("joining : %s : %s",joinId,playerName);
         io.to(hostId).emit('startGame',joinName);
         io.to(joinId).emit('startGame',hostName);
+
+        client.search(hostName)
+        .then(function (images) {
+          playerImage[0] = images[0].url;
+          if(playing){
+            io.to(hostId).emit('myImage',images[0].url);
+            io.to(joinId).emit('yourImage',images[0].url);
+          }
+          console.log("host image = "+images[0].url);
+        });
+        client.search(joinName)
+        .then(function (images) {
+          playerImage[1] = images[0].url;
+          if(playing){
+            io.to(joinId).emit('myImage',images[0].url);
+            io.to(hostId).emit('yourImage',images[0].url);
+          }
+
+          console.log("join image = "+images[0].url);
+        });
         //when this emit, people goes to next page, selection page
 
         myTimer.start(20); //start timer for 10 sec;
