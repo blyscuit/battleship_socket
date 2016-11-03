@@ -324,18 +324,18 @@ var GameModule = function () {
                     if (opponentSea[row][column]>0) {
                         hit = 2; // hit
                         opponent.life -= 1;
+                        player.score += 1;
                     }
 
                     shots.push([row, column, hit]);
 
-                    io.to(player.socket.id).emit('result', player.shots);
+                    io.to(player.socket.id).emit('result', player.shots, player.score);
                     io.to(opponent.socket.id).emit('update map', player.shots);
 
                     if (opponent.life <= 0) {
                         // if opponent died
                         // prevent further move
                         playingPlayer = -1;
-                        player.score += 1;
 
                         io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 1);
                         io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 0);

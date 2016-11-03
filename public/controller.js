@@ -35,9 +35,10 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
     socket.emit("submitMove",[i,j]);
   }
 
-  socket.on('result',function(shotAt){
+  socket.on('result',function(shotAt, score){
     $scope.turn = false;
     $scope.turnName = $scope.opponent;
+    $scope.score = score;
     for (var i = 0; i < shotAt.length; i++) {
       var nn = shotAt[i];
         var row = nn[0];
