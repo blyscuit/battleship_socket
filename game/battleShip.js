@@ -215,8 +215,6 @@ var GameModule = function () {
             };
 
             var startGame = function() {
-                // random who play first
-                randomPlayingPlayer();
 
                 console.log(players[playingPlayer].name + " start first!");
 
@@ -228,8 +226,7 @@ var GameModule = function () {
                     io.to(player.socket.id).emit('gameReady', isMyTurn);
                 }
 
-
-            }
+            };
 
 
             /**
@@ -255,11 +252,12 @@ var GameModule = function () {
             }
 
             /**
+             * Turned into a self-involving: On next restart, winner play first...
              * random the current player's turn
              */
-            function randomPlayingPlayer() {
+            (function randomPlayingPlayer() {
                 playingPlayer = Math.floor(Math.random() * players.length);
-            }
+            })()
 
             /**
              * change turn
@@ -334,9 +332,6 @@ var GameModule = function () {
 
                     if (opponent.life <= 0) {
                         // if opponent died
-                        // prevent further move
-                        playingPlayer = -1;
-
                         io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 1);
                         io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 0);
 
