@@ -14,30 +14,35 @@ var GameModule = function () {
      */
     var init = function (_io) {
         io = _io;
-    }
+        console.log("GameModuleInited");
+
+        io.on('createGameRoom', function (name) {
+            console.log(name);
+        })
+
+    };
+
+    // delete the room associated with this socket
+    var onDisconnect = function(socket){
+        removeRoom(socket.id);
+        console.log('user '+socket.id+' disconnected');
+    };
+
+    // give the new comer the current list of rooms
+    var getRoomList = function () {
+        return roomList;
+    };
 
     var bindSocket = function (socket) {
 
         console.log("BattleShipSocket: a user has joined the game: "+socket.id);
-
-        // give the new comer the current list of rooms
-        io.emit('connected', {
-            roomList: roomList
-        });
-
-        // delete the room associated with this socket
-        socket.on('disconnect',function(){
-            removeRoom(socket.id);
-            console.log('user '+socket.id+' disconnected');
-
-        });
 
         socket.on('createGameRoom', function (hostName) {
 
             // generate a unique id for this game
             var gameId = uuid.v4();
 
-            var game = new GameFactory.newInstance(gameId,socket,hostName,socket.id);
+            var game = GameFactory.newInstance(gameId,socket,hostName);
 
             // create a room object and assign the game
             var room = {
@@ -60,7 +65,7 @@ var GameModule = function () {
 
             io.emit('roomCreated', room)
 
-        })
+        });
 
         socket.on('joinRoom', function (room, name) {
             var _room = roomList[room.gameId];
@@ -98,7 +103,7 @@ var GameModule = function () {
          * @param name - host's name
          * @param id - host's id
          */
-        var newInstance = function(gameId, socket, name, id) {
+        var newInstance = function(gameId, socket, name) {
 
             /* ============================================================================== *
                 Instance's Variables
@@ -112,6 +117,8 @@ var GameModule = function () {
 
             /** Array index of the current platey */
             var playingPlayer = -1;
+
+            var numberOfPlayerSubmittedPlan = 0;
 
             /**
              *
@@ -145,12 +152,14 @@ var GameModule = function () {
             var players = [];
 
             /* ============================================================================== *
-                Self-involved Functions
+                Self-involved Functions (Init)
              * ============================================================================== */
 
             (function init() {
                 // add the host to the game
-                addPlayer(socket, name, id);
+                addPlayer(socket, name);
+
+
             })();
 
             /* ============================================================================== *
@@ -161,17 +170,20 @@ var GameModule = function () {
              * add a player to the room
              * @param socket
              * @param name
-             * @param id
              */
-            var addPlayer = function (socket, name, id) {
-                players.push({
+            var addPlayer = function (socket, name) {
+                var player = {
                     socket: socket,
                     name: name,
-                    id: id,
                     shots: [],
                     sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
-                    life: id
-                })
+                    life: MAX_LIFE
+                }
+
+                setupPlayerSocketFunctions(player);
+
+
+                players.push(player);
             };
 
             /**
@@ -183,15 +195,28 @@ var GameModule = function () {
 
                     var player = players[i];
 
-                    // clear players sea matrix and shots
+                    // reset player
                     player.sea = createEmptySea(SEA_WIDTH, SEA_HEIGHT);
                     player.shots = [];
+                    player.life = MAX_LIFE;
 
                 }
 
+            };
+
+            var startGame = function() {
                 // random who play first
                 randomPlayingPlayer();
-            };
+
+                // send turn state for every player
+                for (var i = 0; i < players.length; i++) {
+                    var player = players[i];
+                    var isMyTurn = (i === playingPlayer);
+                    io.to(player.socket.id).emit('gameReady', isMyTurn);
+                }
+
+
+            }
 
 
             /**
@@ -230,6 +255,46 @@ var GameModule = function () {
                 playingPlayer = (playingPlayer+1) % players.length;
             }
 
+            function getPlayerFromId(socketId) {
+                for (var i = 0; i < players.length; i++) {
+                    if (players[i].socket.id === socketId) {
+                        return players[i];
+                    }
+                }
+            }
+
+            function setupPlayerSocketFunctions(player) {
+
+                var socket = player.socket;
+
+                socket.on('submitPlan', function (atLocationArray) {
+                    var sea = player.sea;
+
+                    for (var i = 0; i < atLocationArray.length; i++) {
+                        var num = atLocationArray[i]
+                        var row = num[0];
+                        var column = num[1];
+                        var shipNum = num[2];
+
+                        sea[row][column] = shipNum;
+
+                    }
+
+                    io.to(socket.id).emit('receivedPlan');
+
+                    numberOfPlayerSubmittedPlan += 1;
+                    if (numberOfPlayerSubmittedPlan === players.length) {
+                        startGame();
+                    }
+
+                })
+                
+                socket.on('submitMove', function (move) {
+                    console.log(move);
+                })
+                
+            }
+
 
 
 
@@ -245,10 +310,14 @@ var GameModule = function () {
         // expose function of GameFactory
         return {newInstance: newInstance};
 
-    };
+    }();
 
     // expose function GameModule
-    return {init: init, bindSocket: bindSocket};
+    return {
+        init: init,
+        bindSocket: bindSocket,
+        onDisconnect: onDisconnect,
+        getRoomList: getRoomList};
 
 }();
 

@@ -276,7 +276,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, socket){
         socket.emit('createGameRoom', username);
         socket.on('roomCreated', function (room) {
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
-        })
+        });
     }
     
     $scope.joinRoom = function (room) {

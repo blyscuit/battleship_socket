@@ -33,7 +33,7 @@ server.listen(port, function(){
 
 var numConnections = 0;
 
-// init gameFactory with the server's side io
+// init gameModule with the server's side io
 gameModule.init(io);
 
 io.on('connection',function(socket){
@@ -41,11 +41,18 @@ io.on('connection',function(socket){
         numUsers: ++numConnections,
     });
 
+    gameModule.bindSocket(socket);
+
     socket.on('disconnect',function(){
         io.emit('connected', { numUsers: --numConnections });
+        gameModule.onDisconnect(socket);
     });
 
-    gameModule.bindSocket(socket);
+
+
+    io.on("createGameRoom", function (name) {
+        console.log(name);
+    })
 
 
 });
