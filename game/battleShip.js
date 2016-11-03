@@ -1,200 +1,258 @@
 var uuid = require('node-uuid');
-var Timer = require('timer.js');
 
+var GameModule = function () {
 
-var Game = function(io){
-  var playerCount = 0;
-  var gameId = uuid.v4();
-  var maxSea = 8;
-  var hostId = 0;
-  var joinId = 0;
-  var inProgress = false;
-  var sea = [];
-  var maxPlayer = 2;
-  var playerSubmit = 0;
-  var shot = [];
-  var shotAt = [];
-  var turn = Math.floor(Math.random() * 2); //random 0-1
-  var playerScore = [];
-  var playerLife = [];
-  var maxLife = 16;
+    // map gameId to room
+    var roomList = {};
+    // map host to gameId (should use database but meh)
+    var hostGameMap = {};
+    var io;
 
-  var gamePlayer = {
-    host: {
-      name: "",
-      id: ""
-    },
-    guest: {
-      name: "",
-      id: ""
-    }
-  };
-
-  for (var k = 0; k < maxPlayer; k++) {
-    var sea1 = []
-    for(var i = 0; i<maxSea;i++){
-      var a = [];
-      for(var j = 0; j<maxSea;j++){
-        a.push(0);
-      }
-      sea1.push(a);
-    }
-    sea.push(sea1);
-    shot.push([]);
-    shotAt.push([]);
-    playerScore.push(0);
-    playerLife.push(0);
-  }
-
-  var myTimer = new Timer({
-    tick    : 1, // how many sec per tick
-    ontick  : function(ms) {
-      io.sockets.in(gameId).emit('timer', { time: ms });
-      console.log(ms + ' ms left') },  //ms <-> sec
-      onstart : function() { console.log('timer started') },
-      onstop  : function() { console.log('timer stop') },
-      onpause : function() { console.log('timer set on pause') },
-      onend   : function() { console.log('timer ended normally') }
-    });
-
-    function startTimeTicking(){
-      myTimer.stop();
-      myTimer.start(10).on('end',function(){
-        if(turn === 0){
-          io.to(hostId).emit('result',shotAt[1]);
-          io.to(joinId).emit('update map',shot[0]);
-          turn = 1;
-        }else if(turn ===1 ){
-          io.to(joinId).emit('result',shotAt[0]);
-          io.to(hostId).emit('update map',shot[1]);
-          turn = 0;
-        }
-        startTimeTicking();
-      });
+    /**
+     * must run first
+     * @param _io - server's io
+     */
+    var init = function (_io) {
+        io = _io;
     }
 
+    var bindSocket = function (socket) {
+
+        console.log("BattleShipSocket: a user has joined the game: "+socket.id);
+
+        // give the new comer the current list of rooms
+        io.emit('connected', {
+            roomList: roomList
+        });
+
+        // delete the room associated with this socket
+        socket.on('disconnect',function(){
+            removeRoom(socket.id);
+            console.log('user '+socket.id+' disconnected');
+
+        });
+
+        socket.on('createGameRoom', function (hostName) {
+
+            // generate a unique id for this game
+            var gameId = uuid.v4();
+
+            var game = new GameFactory.newInstance(gameId,socket,hostName,socket.id);
+
+            // create a room object and assign the game
+            var room = {
+                hostName: hostName,
+                gameId: gameId,
+                game: game
+            };
+
+            // remove previous room created by this socket
+            // just in case the socket somehow create multiple room
+            removeRoom(hostGameMap[socket.id]);
+
+            // update the hostId <-> gameId map
+            hostGameMap[socket.id] = gameId;
+
+            // keep track of the new room
+            roomList[socket.id] = room;
+
+            notifyRoomListUpdated();
+
+            io.emit('roomCreated', room)
+
+        })
+
+        socket.on('joinRoom', function (room, name) {
+            var _room = roomList[room.gameId];
+            console.log(_room);
+            _room.game.join(socket, name);
+        })
 
 
-    function join(socket,playerName){
-      socket.join(gameId);
-      playerCount++;
-      // socket.broadcast.to(gameId).emit('playerJoined','hi');
-      console.log('joiningGame');
+        // ==========================================================
+        // helper functions
+        // ==========================================================
 
-      socket.on('submitPlan',function(atLocationArray){
-        for (var i = 0; i < atLocationArray.length; i++) {
-          var num = atLocationArray[i]
-          var row = num[0];
-          var column = num[1];
-          var shipNum = num[2];
-          if(socket.id == hostId){
-            sea[0][row][column] = shipNum;
-          }else{
-            sea[1][row][column] = shipNum;
-          }
+        function notifyRoomListUpdated() {
+            io.emit('roomListUpdated', roomList);
         }
 
-        io.to(socket.id).emit('receivedPlan');
-        playerSubmit++;
-        if(playerSubmit===maxPlayer){
-          if(turn === 1){
-            io.to(hostId).emit('gameReady',false);
-            io.to(joinId).emit('gameReady',true);
-          }else{
-            io.to(hostId).emit('gameReady',true);
-            io.to(joinId).emit('gameReady',false);
-          }
-
-          startTimeTicking();
+        /**
+         * Remove a room from roomList
+         * Do nothing if room not found or is undefined
+         * Will notify client of roomList changes
+         * @param hostId - the room to be removed
+         */
+        function removeRoom(hostId) {
+            delete roomList[hostGameMap[hostId]];
+            notifyRoomListUpdated()
         }
-      });
 
-      socket.on('disconnect',function(){
-        playerCount--;
-        socket.broadcast.to(gameId).emit('playerQuit');
-        io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
-      });
+    };
 
-      //WOODS check dead around here
-      //add score as a variable and send socket to end game with new score
-      // just work on game.html
-      // and controller.js
-      socket.on('submitMove',function(move){
-        if(socket.id == hostId && turn == 0||socket.id == joinId && turn == 1){
-          var row = move[0];
-          var column = move[1];
-          var timeEnd;
-          myTimer.stop();
-          if(socket.id == hostId){
-            shot[0].push([row,column]);
-            var hit = 1;
-            if(sea[1][row][column]>0){
-              hit = 2;
-              playerLife[0]+=1;
-              if(playerLife[0]>=maxLife){
-                playerScore[0]++;
-                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],1);
-                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],0);
-              }
+    var GameFactory = function(){
+
+        /**
+         * Create a new room with Host's Socket, Name, and ID
+         * @param socket - host's socket
+         * @param name - host's name
+         * @param id - host's id
+         */
+        var newInstance = function(gameId, socket, name, id) {
+
+            /* ============================================================================== *
+                Instance's Variables
+             * ============================================================================== */
+
+            const MAX_LIFE = 16;
+            const SEA_WIDTH = 8; // x
+            const SEA_HEIGHT = 8; // y
+
+            const GAME_ID = gameId;
+
+            /** Array index of the current platey */
+            var playingPlayer = -1;
+
+            /**
+             *
+             * Keep tracks of the players
+             *
+             * sea - is a 2 dimensional array containing the player's sea (ship placement)
+             * shots - array of shots (object containing x and y location) this player has made
+             *
+             * [{
+             *      socket: Object{socket.io},
+             *
+             *      name: string,
+             *
+             *      id: string,
+             *
+             *      sea:    [
+             *                  [0,0,0],
+             *                  [0,0,0],
+             *                  [0,0,0]
+             *              ],
+             *
+             *      shots: [
+             *                  {x, y},
+             *                  {x, y}
+             *             ],
+             *
+             *      life: 0
+             *
+             * }]
+             */
+            var players = [];
+
+            /* ============================================================================== *
+                Self-involved Functions
+             * ============================================================================== */
+
+            (function init() {
+                // add the host to the game
+                addPlayer(socket, name, id);
+            })();
+
+            /* ============================================================================== *
+                Functions
+             * ============================================================================== */
+
+            /**
+             * add a player to the room
+             * @param socket
+             * @param name
+             * @param id
+             */
+            var addPlayer = function (socket, name, id) {
+                players.push({
+                    socket: socket,
+                    name: name,
+                    id: id,
+                    shots: [],
+                    sea: createEmptySea(SEA_WIDTH, SEA_HEIGHT),
+                    life: id
+                })
+            };
+
+            /**
+             * Must run after both player joined
+             */
+            var restart = function() {
+                // reset game parameters for each player
+                for (var i = 0; i < players.length; i++) {
+
+                    var player = players[i];
+
+                    // clear players sea matrix and shots
+                    player.sea = createEmptySea(SEA_WIDTH, SEA_HEIGHT);
+                    player.shots = [];
+
+                }
+
+                // random who play first
+                randomPlayingPlayer();
+            };
+
+
+            /**
+             * get room parameters such as seaWidth and seaHeight
+             * @returns {{seaWidth: number, seaHeight: number}}
+             */
+            var getRoomParams = function () {
+                return {seaWidth: SEA_WIDTH, seaHeight: SEA_HEIGHT};
             }
-            shotAt[1].push([row,column,hit]);
-            io.to(hostId).emit('result',shotAt[1]);
-            io.to(joinId).emit('update map',shot[0]);
-            turn = 1;
-          }
-          if(socket.id == joinId){
-            shot[1].push([row,column]);
-            var hit = 1;
-            if(sea[0][row][column]>0){
-              hit = 2;
-              playerLife[1]+=1;
-              if(playerLife[1]>=maxLife){
-                playerScore[1]++;
-                io.to(hostId).emit('gameOver',playerScore[0],playerScore[1],0);
-                io.to(joinId).emit('gameOver',playerScore[1],playerScore[0],1);
-              }
+
+            /* =============================================== *
+                helper functions
+             * =============================================== */
+
+            function createEmptySea(widht, height) {
+                var sea = [];
+                for (var j = 0; j < height; j++) {
+                    // create a zero-filled array of SEA_WIDTH length
+                    sea.push(
+                        Array.apply(null, Array(widht)).map(Number.prototype.valueOf, 0));
+                }
+                return sea;
             }
-            shotAt[0].push([row,column,hit]);
-            io.to(joinId).emit('result',shotAt[0]);
-            io.to(hostId).emit('update map',shot[1]);
-            turn = 0;
-          }
 
-          startTimeTicking();
-          socket.broadcast.to(gameId).emit(move);
+            /**
+             * random the current player's turn
+             */
+            function randomPlayingPlayer() {
+                playingPlayer = Math.random() * players.length;
+            }
+
+            /**
+             * change turn
+             */
+            function nextTurn() {
+                playingPlayer = (playingPlayer+1) % players.length;
+            }
+
+
+
+
+
+
+
+
+
         }
-      });
 
-      socket.on('playerJoined',function(hi){
-        console.log('i know something is happened');
-        myTimer.start(10); //start timer for 10 sec;
-      });
 
-      socket.on('playerQuit',function(){
-        console.log('someone quit');
-      });
 
-      if(playerCount === 2){
-        gamePlayer.guest.name = playerName;
-        joinId = socket.id;
-        console.log("joining : %s : %s",joinId,playerName);
-        io.to(hostId).emit('startGame',gamePlayer.guest.name);
-        io.to(joinId).emit('startGame',gamePlayer.host.name);
-        //when this emit, people goes to next page, selection page
+        // expose function of GameFactory
+        return {newInstance: newInstance};
 
-        myTimer.start(20); //start timer for 10 sec;
-      }else{
-        gamePlayer.host.name = playerName;
-        hostId = socket.id;
-        console.log("joining : %s : %s",hostId,playerName);
-      }
-    }
+    };
 
-    /** Expose public methods */
-    this.getGameID = function () { return gameId; };
-    this.join = function (socket,playerName) { join(socket,playerName); };
-    this.isFull = function () { if(inProgress)return true;return playerCount === 2; };
+    // expose function GameModule
+    return {init: init, bindSocket: bindSocket};
 
-  };
+}();
 
-  module.exports = Game;
+
+
+
+  module.exports = GameModule;

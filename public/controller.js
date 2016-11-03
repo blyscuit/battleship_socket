@@ -299,7 +299,7 @@ simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBo
 
 
 
-  //Game start here
+  //GameRoomFactory start here
   $scope.playButton = function() {
       // Guard against empty name
       var username = $scope.username;

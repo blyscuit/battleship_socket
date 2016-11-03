@@ -10,8 +10,8 @@ var morgan = require('morgan'); 		// log requests to the console (express4)
 var bodyParser = require('body-parser'); 	// pull information from HTML POST (express4)
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 
-//import Game
-var Game = require('./game/battleShip');
+//import GameRoomFactory
+var gameModule = require('./game/battleShip');
 
 // configuration ===============================================================
 // mongoose.connect(database.url); 	// connect to mongoDB database on modulus.io
@@ -33,77 +33,19 @@ server.listen(port, function(){
 
 var numConnections = 0;
 
-var roomList = {};
-
-//socket
+// init gameFactory with the server's side io
+gameModule.init(io);
 
 io.on('connection',function(socket){
-
-    var socketId = socket.id;
-
     io.emit('connected', {
-      numUsers: ++numConnections,
-      roomList: roomList
+        numUsers: ++numConnections,
     });
-
-    console.log('user '+socketId+' connected | ' );
 
     socket.on('disconnect',function(){
-      removeRoom(socketId);
-    io.emit('connected', { numUsers: --numConnections });
-    console.log('user '+socketId+' disconnected');
-
+        io.emit('connected', { numUsers: --numConnections });
     });
 
-    socket.on('createGameRoom', function (hostName) {
-        var game = new Game(io);
-        game.join(socket, hostName);
-
-        var room = {
-            hostName: hostName,
-            hostId: socketId,
-            game: game
-        };
-
-        // remove previous room created by this socket
-        // just in case the socket somehow create multiple room
-        removeRoom(socketId);
-
-        // assign the new room to this socket
-        roomList[socketId] = room;
-
-        notifyRoomListUpdated();
-
-        io.emit('roomCreated', room)
-
-    })
-
-    socket.on('joinRoom', function (room, name) {
-        var _room = roomList[room.hostId];
-        console.log(_room);
-        _room.game.join(socket, name);
-    })
-
-
-    // ==========================================================
-    // helper functions
-    // ==========================================================
-
-    function notifyRoomListUpdated() {
-        io.emit('roomListUpdated', roomList);
-    }
-
-    /**
-     * Remove a room from roomList
-     * Do nothing if room not found or is undefined
-     * Will notify client of roomList changes
-     * @param hostId - the room to be removed
-     */
-    function removeRoom(hostId) {
-        // TODO: error if host left while placing ships.
-        delete roomList[hostId];
-        notifyRoomListUpdated()
-    }
+    gameModule.bindSocket(socket);
 
 
 });
