@@ -1,10 +1,11 @@
 /**
  * TODO:
  *  - Restart after winning
+ *  - Handle possible delay when joining the room where the player may able to join multiple rooms
+ *  - Kill game when user disconnect
  * FIXME:
  *  - Score only display for myself
  *  - Turn name display wrongly if timer end/ still pretty buggy
- *
  */
 
 
@@ -17,7 +18,7 @@ var googleImageClient = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'A
 // Timer
 var Timer = require('timer.js');
 
-var GameModule = function () {
+var BattleshipGameModule = function () {
 
     // map gameId to room
     var roomList = {};
@@ -43,6 +44,7 @@ var GameModule = function () {
     var onDisconnect = function(socket){
         removeRoom(socket.id);
         console.log('user '+socket.id+' disconnected');
+        
     };
 
     // give the new comer the current list of rooms
@@ -411,6 +413,11 @@ var GameModule = function () {
                     socket.emit('updateImages', player.imgUrl, opponent.imgUrl);
                 })
 
+                socket.on('restartGame', function () {
+                    restartGame();
+                    io.sockets.in(gameId).emit('gameRestarted');
+                })
+
             }
 
             /**
@@ -464,7 +471,7 @@ var GameModule = function () {
 
     }();
 
-    // expose function GameModule
+    // expose function BattleshipGameModule
     return {
         init: init,
         bindSocket: bindSocket,
@@ -476,4 +483,4 @@ var GameModule = function () {
 
 
 
-  module.exports = GameModule;
+  module.exports = BattleshipGameModule;
