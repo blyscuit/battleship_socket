@@ -1,5 +1,5 @@
 // our main app, load modules here
-var app = angular.module('mainApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
+var app = angular.module('mainApp', ['angulike','ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
 
 // socket
 app.factory('socket', function (socketFactory) {

@@ -99,6 +99,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
+  $scope.social = {
+    twitterWaiting : "I just created a Room in BattleShip. My username is "+$stateParams.myParam.username+". Come join me!"
+  };
 $rootScope.userScore = 0;
 $rootScope.oppScore = 0;
   $scope.username  = $stateParams.myParam.username;
@@ -272,7 +275,9 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 
 
 simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, socket){
-
+    $scope.social = {
+      twitterLobby : "I love battleship."
+    };
     $scope.rooms = [];
 
 
