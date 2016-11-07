@@ -121,6 +121,16 @@ var BattleshipGameModule = function () {
 
     };
 
+    var bindAdmin = function (socket){
+      console.log("BattleShipAdmin: an admin has joined the game: "+socket.id);
+
+        socket.on('resetRoom', function (room) {
+          var _room = roomList[room.gameId];
+            // _room.restartGame();
+          _room.game.reset();
+        });
+    };
+
     var GameFactory = function(){
 
         /**
@@ -246,6 +256,13 @@ var BattleshipGameModule = function () {
                 players.push(player);
                 console.log('added');
 
+            };
+
+            var resetScore = function() {
+              for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                player.score = 0;
+              }
             };
 
             /**
@@ -418,10 +435,6 @@ var BattleshipGameModule = function () {
                     io.sockets.in(gameId).emit('gameRestarted');
                 })
 
-                socket.on('resetRoom', function () {
-                    restartGame();
-                    io.sockets.in(gameId).emit('roomReset');
-                })
 
             }
 
@@ -455,6 +468,15 @@ var BattleshipGameModule = function () {
                 })
             }();
 
+            /**
+             * reset both score and sea
+             */
+            var resetRoom = function() {
+              restartGame();
+              resetScore();
+              io.sockets.in(gameId).emit('roomReset');
+            };
+
             /* ============================================================================== *
              Self-involved Functions (Init)
              * ============================================================================== */
@@ -466,7 +488,8 @@ var BattleshipGameModule = function () {
 
             return {
                 join: addPlayer,
-                start: restartGame
+                start: restartGame,
+                reset: resetRoom
             };
 
         };
@@ -480,6 +503,7 @@ var BattleshipGameModule = function () {
     return {
         init: init,
         bindSocket: bindSocket,
+        bindAdmin: bindAdmin,
         onDisconnect: onDisconnect,
         getRoomList: getRoomList};
 

@@ -34,7 +34,10 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.shootAt = function(j,i){
     socket.emit("submitMove",[i,j]);
   }
-  socket.on('roomReset', function (room) {
+  socket.on('roomReset', function () {
+      alert("This game was reset by the server");
+      $rootScope.userScore = 0;
+      $rootScope.oppScore = 0;
       $state.go('gamePrepare',{});
   });
   socket.on('result',function(shotAt, score){
@@ -136,6 +139,9 @@ $rootScope.oppScore = 0;
 });
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
   socket.on('roomReset', function (room) {
+  $rootScope.userScore = 0;
+  $rootScope.oppScore = 0;
+    alert("This game was reset by the server");
       $state.go('gamePrepare',{});
   });
 
@@ -332,6 +338,8 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
         $scope.rooms = list;
     })
 
+    socket.emit('registAdmin',socket);
+
     $scope.createRoom = function () {
         var username = $scope.username;
         // Guard against empty name
@@ -343,7 +351,6 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
     }
 
     $scope.resetRoom = function (room) {
-        console.log(room);
         // var username = $scope.username;
         // // Guard against empty name
         // if (typeof username === 'undefined' || username.length <= 0)return;
@@ -357,7 +364,7 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
         // socket.emit("joinRoom", room, username);
 //Reset room here
 
-        socket.emit("resetRoom", room, username);
+        socket.emit("resetRoom",room);
     }
 
 });
