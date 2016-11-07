@@ -60,16 +60,25 @@ io.on('connection',function(socket){
     });
 
 
+    socket.on('registAdmin', function(){
+      console.log("admin's here");
+      io.emit('connected', {
+        numUsers: --numConnections,
+        roomList: gameModule.getRoomList()
+      });
+
+    });
+    socket.on('deRegistAdmin', function(){
+      console.log("admin's gone");
+      io.emit('connected', {
+        numUsers: ++numConnections,
+        roomList: gameModule.getRoomList()
+      });
+
+    });
 
 });
 
-io.on('registAdmin', function(socket){
-  io.emit('connected', {
-    numUsers: --numConnections,
-    roomList: gameModule.getRoomList()
-  });
-
-});
 
 
   //

@@ -52,8 +52,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         $scope.oppSea[row][column] = {"length":re,"name":re};
     }
   });
-  socket.on('update map',function(shot){
+  socket.on('update map',function(shot,oppS){
     $scope.turn = true;
+    $scope.OppScore = oppS;
     $scope.turnName = $scope.username;
     for (var i = 0; i < shot.length; i++) {
       var nn = shot[i];
@@ -85,7 +86,13 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
       });
     }
   });
-
+  socket.on('disconnectNotice', function(){
+    $ngBootbox.alert('Your opponent quited.')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('lobby',{});
+      });
+  });
   socket.on('gameRestarted', function () {
       $state.go('gamePrepare', {});
   });
@@ -137,7 +144,7 @@ $rootScope.oppScore = 0;
             }
           }, 750);
 });
-simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
+simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket,$ngBootbox) {
   socket.on('roomReset', function (room) {
   $rootScope.userScore = 0;
   $rootScope.oppScore = 0;
@@ -148,8 +155,8 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
 
-      $rootScope.userScore = $scope.score;
-      $rootScope.oppScore = $scope.oppScore;
+      // $rootScope.userScore = $scope.score;
+      // $rootScope.oppScore = $scope.oppScore;
       $scope.score = $rootScope.userScore;
       $scope.OppScore = $rootScope.oppScore;
 
@@ -277,6 +284,15 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       console.log(datadata);
     });
   });
+
+  socket.on('disconnectNotice', function(){
+    $ngBootbox.alert('Your opponent quited.')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('lobby',{});
+        socket.emit('restartGame');
+      });
+  });
 });
 
 
@@ -324,7 +340,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
 
 });
 
-simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, socket){
+simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, socket,$window){
 
     $scope.rooms = [];
 
@@ -338,7 +354,7 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
         $scope.rooms = list;
     })
 
-    socket.emit('registAdmin',socket);
+    socket.emit('registAdmin');
 
     $scope.createRoom = function () {
         var username = $scope.username;
@@ -366,7 +382,11 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
 
         socket.emit("resetRoom",room);
     }
+    $scope.onExit = function() {
+      socket.emit('deRegistAdmin');
+    };
 
+   $window.onbeforeunload =  $scope.onExit;
 });
 
 

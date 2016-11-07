@@ -1,11 +1,11 @@
 /**
  * TODO:
- *  - Restart after winning
+ *  DONE - Restart after winning
  *  - Handle possible delay when joining the room where the player may able to join multiple rooms
- *  - Kill game when user disconnect
+ *  - Kill game when user disconnect -- emit 'disconnectNotice' to user in a room, frint end provided
  * FIXME:
- *  - Score only display for myself
- *  - Turn name display wrongly if timer end/ still pretty buggy
+ *  DONE - Score only display for myself - DONE
+ *  DONE - Turn name display wrongly if timer end/ still pretty buggy - DONE
  */
 
 
@@ -44,7 +44,6 @@ var BattleshipGameModule = function () {
     var onDisconnect = function(socket){
         removeRoom(socket.id);
         console.log('user '+socket.id+' disconnected');
-
     };
 
     // give the new comer the current list of rooms
@@ -215,6 +214,12 @@ var BattleshipGameModule = function () {
                 myTimer.start(11).on('end',function(){
                     io.sockets.in(gameId).emit('timer', { time: 10000 });
                     resetAndStartTimer();
+                    //send name and score of next user and pass the turn
+                    var player = players[playingPlayer];
+                    var opponent = players[(player.index+1)%players.length];
+                    io.to(player.socket.id).emit('result', player.shots, player.score);
+                    io.to(opponent.socket.id).emit('update map', player.shots,player.score);
+
                     nextTurn();
                 });
             }
@@ -410,7 +415,7 @@ var BattleshipGameModule = function () {
                     shots.push([row, column, hit]);
 
                     io.to(player.socket.id).emit('result', player.shots, player.score);
-                    io.to(opponent.socket.id).emit('update map', player.shots);
+                    io.to(opponent.socket.id).emit('update map', player.shots,player.score);
 
                     if (opponent.life <= 0) {
                         // if opponent died
