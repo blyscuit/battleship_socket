@@ -44,7 +44,7 @@ var BattleshipGameModule = function () {
     var onDisconnect = function(socket){
         removeRoom(socket.id);
         console.log('user '+socket.id+' disconnected');
-        
+
     };
 
     // give the new comer the current list of rooms
@@ -367,7 +367,7 @@ var BattleshipGameModule = function () {
                     }
 
                 });
-                
+
                 socket.on('submitMove', function (move) {
 
                     // if it is not this player's turn, do nothing
@@ -407,7 +407,7 @@ var BattleshipGameModule = function () {
                     }
 
                 });
-                
+
                 socket.on('requestImages', function () {
                     var opponent = players[(player.index+1)%players.length];
                     socket.emit('updateImages', player.imgUrl, opponent.imgUrl);
@@ -416,6 +416,11 @@ var BattleshipGameModule = function () {
                 socket.on('restartGame', function () {
                     restartGame();
                     io.sockets.in(gameId).emit('gameRestarted');
+                })
+
+                socket.on('resetRoom', function () {
+                    restartGame();
+                    io.sockets.in(gameId).emit('roomReset');
                 })
 
             }

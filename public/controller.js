@@ -34,7 +34,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.shootAt = function(j,i){
     socket.emit("submitMove",[i,j]);
   }
-
+  socket.on('roomReset', function (room) {
+      $state.go('gamePrepare',{});
+  });
   socket.on('result',function(shotAt, score){
     $scope.turn = false;
     $scope.turnName = $scope.opponent;
@@ -80,9 +82,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
       });
     }
   });
-  
+
   socket.on('gameRestarted', function () {
-    $state.go('gamePrepare', {});
+      $state.go('gamePrepare', {});
   });
 
     socket.emit('requestImages');
@@ -130,6 +132,10 @@ $rootScope.oppScore = 0;
           }, 750);
 });
 simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
+  socket.on('roomReset', function (room) {
+      $state.go('gamePrepare',{});
+  });
+
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
 
@@ -288,7 +294,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
         });
     }
-    
+
     $scope.joinRoom = function (room) {
         console.log(room);
         var username = $scope.username;
@@ -307,6 +313,49 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
 
 });
 
+simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, socket){
+
+    $scope.rooms = [];
+
+
+    socket.on('connected', function(c){
+        $scope.online = c.numUsers;
+        $scope.rooms = c.roomList;
+    })
+
+    socket.on('roomListUpdated', function (list) {
+        $scope.rooms = list;
+    })
+
+    $scope.createRoom = function () {
+        var username = $scope.username;
+        // Guard against empty name
+        if (typeof username === 'undefined' || username.length <= 0)return;
+        socket.emit('createGameRoom', username);
+        socket.on('roomCreated', function (room) {
+            $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
+        });
+    }
+
+    $scope.resetRoom = function (room) {
+        console.log(room);
+        // var username = $scope.username;
+        // // Guard against empty name
+        // if (typeof username === 'undefined' || username.length <= 0)return;
+        //
+        // socket.on('startGame',function(name){
+        //     $rootScope.opponent = name;
+        //     $rootScope.you = username;
+        //     $state.go('gamePrepare',{});
+        // });
+        //
+        // socket.emit("joinRoom", room, username);
+//Reset room here
+
+        socket.emit("resetRoom", room, username);
+    }
+
+});
 
 
 simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBootbox) {

@@ -52,5 +52,11 @@ app.config(['$stateProvider', '$urlRouterProvider',
         controller: 'GameWaitCtrl',
         params:{myParam: null}
       })
+      .state('admin', {
+            url: '/admin',
+        templateUrl: '/partials/admin.html',
+        controller: 'AdminCtrl'
+        // controller: 'GamePrepareCtrl'
+      })
 
   }]);
