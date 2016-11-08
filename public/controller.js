@@ -106,6 +106,12 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         $scope.yourImage = oppImgUrl;
     });
 
+    $scope.forfeit = function(){
+  socket.emit("forfeit");
+}
+
+
+
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {

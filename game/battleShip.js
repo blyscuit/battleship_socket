@@ -8,7 +8,6 @@
  *  DONE - Turn name display wrongly if timer end/ still pretty buggy - DONE
  */
 
-
 var uuid = require('node-uuid');
 
 // Google Image
@@ -18,8 +17,7 @@ var googleImageClient = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'A
 // Timer
 var Timer = require('timer.js');
 
-var BattleshipGameModule = function () {
-
+var BattleshipGameModule = function() {
     // map gameId to room
     var roomList = {};
     // map host to gameId (should use database but meh)
@@ -429,6 +427,11 @@ var BattleshipGameModule = function () {
                     }
 
                 });
+
+                socket.on('forfeit',function(){
+                  console.log("forfeit");
+                  //TODO gameOver
+                })
 
                 socket.on('requestImages', function () {
                     var opponent = players[(player.index+1)%players.length];
