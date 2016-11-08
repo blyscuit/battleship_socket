@@ -429,8 +429,9 @@ var BattleshipGameModule = function() {
                 });
 
                 socket.on('forfeit',function(){
-                  console.log("forfeit");
-                  //TODO gameOver
+                  var opponent = players[(player.index+1)%players.length];
+                  io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 0);
+                  io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 1);
                 })
 
                 socket.on('requestImages', function () {
