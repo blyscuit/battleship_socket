@@ -254,6 +254,23 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     $scope.men.push(ship);
   };
 
+  $scope.randomShipPut = function(){
+    for (i = 0; i < $scope.men.length; i++) {
+      var sship = $scope.men[i];
+      if(Math.floor((Math.random() * 2) + 0)===0){
+        $scope.turnShip(sship);
+      }
+      var ii = Math.floor((Math.random() * $scope.maxSea) + 0);
+      var jj = Math.floor((Math.random() * $scope.maxSea) + 0);
+      while(!$scope.dropValidateSpace(sship,ii,jj)){
+        ii = Math.floor((Math.random() * $scope.maxSea) + 0);
+        jj = Math.floor((Math.random() * $scope.maxSea) + 0);
+      }
+      $scope.onDropPlace(null,sship,ii,jj);
+    }
+    $scope.men = [];
+  };
+
   $scope.submitButton = function(){
     if($scope.men.length>0||$scope.send == true){
       alert("Please put down all the ships");
