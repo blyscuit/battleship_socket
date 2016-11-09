@@ -320,6 +320,16 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 
 
 simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, socket){
+
+    socket.on('forceDisconnect', function () {
+        $state.go('lobby');
+    });
+
+    $scope.heartClicked = false;
+
+    $scope.heartClick = function () {
+    };
+
     $scope.social = {
       twitterLobby : "I love battleship."
     };
@@ -343,7 +353,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
         socket.on('roomCreated', function (room) {
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
         });
-    }
+    };
 
     $scope.joinRoom = function (room) {
         console.log(room);
