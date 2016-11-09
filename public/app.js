@@ -1,5 +1,5 @@
 // our main app, load modules here
-var app = angular.module('mainApp', ['ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
+var app = angular.module('mainApp', ['angulike','ngAnimate','ui.bootstrap','ui.router','simpleControllers','btford.socket-io','ang-drag-drop','ngBootbox']);
 
 // socket
 app.factory('socket', function (socketFactory) {
@@ -51,6 +51,12 @@ app.config(['$stateProvider', '$urlRouterProvider',
         templateUrl: '/partials/game.waiting.html',
         controller: 'GameWaitCtrl',
         params:{myParam: null}
+      })
+      .state('admin', {
+            url: '/admin',
+        templateUrl: '/partials/admin.html',
+        controller: 'AdminCtrl'
+        // controller: 'GamePrepareCtrl'
       })
 
   }]);

@@ -1,13 +1,12 @@
 /**
  * TODO:
- *  - Restart after winning
+ *  DONE - Restart after winning
  *  - Handle possible delay when joining the room where the player may able to join multiple rooms
- *  - Kill game when user disconnect
+ *  - Kill game when user disconnect -- emit 'disconnectNotice' to user in a room, frint end provided
  * FIXME:
- *  - Score only display for myself
- *  - Turn name display wrongly if timer end/ still pretty buggy
+ *  DONE - Score only display for myself - DONE
+ *  DONE - Turn name display wrongly if timer end/ still pretty buggy - DONE
  */
-
 
 var uuid = require('node-uuid');
 
@@ -18,8 +17,7 @@ var googleImageClient = new ImagesClient('014187161452568699414:yh-hz5utvi8', 'A
 // Timer
 var Timer = require('timer.js');
 
-var BattleshipGameModule = function () {
-
+var BattleshipGameModule = function() {
     // map gameId to room
     var roomList = {};
     // map host to gameId (should use database but meh)
@@ -44,7 +42,6 @@ var BattleshipGameModule = function () {
     var onDisconnect = function(socket){
         removeRoom(socket.id);
         console.log('user '+socket.id+' disconnected');
-        
     };
 
     // give the new comer the current list of rooms
@@ -119,6 +116,16 @@ var BattleshipGameModule = function () {
 
         })
 
+    };
+
+    var bindAdmin = function (socket){
+      console.log("BattleShipAdmin: an admin has joined the game: "+socket.id);
+
+        socket.on('resetRoom', function (room) {
+          var _room = roomList[room.gameId];
+            // _room.restartGame();
+          _room.game.reset();
+        });
     };
 
     var GameFactory = function(){
@@ -205,6 +212,12 @@ var BattleshipGameModule = function () {
                 myTimer.start(11).on('end',function(){
                     io.sockets.in(gameId).emit('timer', { time: 10000 });
                     resetAndStartTimer();
+                    //send name and score of next user and pass the turn
+                    var player = players[playingPlayer];
+                    var opponent = players[(player.index+1)%players.length];
+                    io.to(player.socket.id).emit('result', player.shots, player.score);
+                    io.to(opponent.socket.id).emit('update map', player.shots,player.score);
+
                     nextTurn();
                 });
             }
@@ -246,6 +259,13 @@ var BattleshipGameModule = function () {
                 players.push(player);
                 console.log('added');
 
+            };
+
+            var resetScore = function() {
+              for (var i = 0; i < players.length; i++) {
+                var player = players[i];
+                player.score = 0;
+              }
             };
 
             /**
@@ -367,7 +387,7 @@ var BattleshipGameModule = function () {
                     }
 
                 });
-                
+
                 socket.on('submitMove', function (move) {
 
                     // if it is not this player's turn, do nothing
@@ -393,7 +413,7 @@ var BattleshipGameModule = function () {
                     shots.push([row, column, hit]);
 
                     io.to(player.socket.id).emit('result', player.shots, player.score);
-                    io.to(opponent.socket.id).emit('update map', player.shots);
+                    io.to(opponent.socket.id).emit('update map', player.shots,player.score);
 
                     if (opponent.life <= 0) {
                         // if opponent died
@@ -407,7 +427,13 @@ var BattleshipGameModule = function () {
                     }
 
                 });
-                
+
+                socket.on('forfeit',function(){
+                  var opponent = players[(player.index+1)%players.length];
+                  io.to(player.socket.id).emit('gameOver', player.score, opponent.score, 0);
+                  io.to(opponent.socket.id).emit('gameOver', opponent.score, player.score, 1);
+                })
+
                 socket.on('requestImages', function () {
                     var opponent = players[(player.index+1)%players.length];
                     socket.emit('updateImages', player.imgUrl, opponent.imgUrl);
@@ -417,6 +443,7 @@ var BattleshipGameModule = function () {
                     restartGame();
                     io.sockets.in(gameId).emit('gameRestarted');
                 })
+
 
             }
 
@@ -450,6 +477,15 @@ var BattleshipGameModule = function () {
                 })
             }();
 
+            /**
+             * reset both score and sea
+             */
+            var resetRoom = function() {
+              restartGame();
+              resetScore();
+              io.sockets.in(gameId).emit('roomReset');
+            };
+
             /* ============================================================================== *
              Self-involved Functions (Init)
              * ============================================================================== */
@@ -461,7 +497,8 @@ var BattleshipGameModule = function () {
 
             return {
                 join: addPlayer,
-                start: restartGame
+                start: restartGame,
+                reset: resetRoom
             };
 
         };
@@ -475,6 +512,7 @@ var BattleshipGameModule = function () {
     return {
         init: init,
         bindSocket: bindSocket,
+        bindAdmin: bindAdmin,
         onDisconnect: onDisconnect,
         getRoomList: getRoomList};
 

@@ -34,7 +34,12 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
   $scope.shootAt = function(j,i){
     socket.emit("submitMove",[i,j]);
   }
-
+  socket.on('roomReset', function () {
+      alert("This game was reset by the server");
+      $rootScope.userScore = 0;
+      $rootScope.oppScore = 0;
+      $state.go('gamePrepare',{});
+  });
   socket.on('result',function(shotAt, score){
     $scope.turn = false;
     $scope.turnName = $scope.opponent;
@@ -47,8 +52,9 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         $scope.oppSea[row][column] = {"length":re,"name":re};
     }
   });
-  socket.on('update map',function(shot){
+  socket.on('update map',function(shot,oppS){
     $scope.turn = true;
+    $scope.OppScore = oppS;
     $scope.turnName = $scope.username;
     for (var i = 0; i < shot.length; i++) {
       var nn = shot[i];
@@ -80,9 +86,15 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
       });
     }
   });
-  
+  socket.on('disconnectNotice', function(){
+    $ngBootbox.alert('Your opponent quited.')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('lobby',{});
+      });
+  });
   socket.on('gameRestarted', function () {
-    $state.go('gamePrepare', {});
+      $state.go('gamePrepare', {});
   });
 
     socket.emit('requestImages');
@@ -94,9 +106,18 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         $scope.yourImage = oppImgUrl;
     });
 
+    $scope.forfeit = function(){
+  socket.emit("forfeit");
+}
+
+
+
 });
 
 simpleControllers.controller('GameWaitCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval) {
+  $scope.social = {
+    twitterWaiting : "I just created a Room in BattleShip. My username is "+$stateParams.myParam.username+". Come join me!"
+  };
 $rootScope.userScore = 0;
 $rootScope.oppScore = 0;
   $scope.username  = $stateParams.myParam.username;
@@ -129,12 +150,19 @@ $rootScope.oppScore = 0;
             }
           }, 750);
 });
-simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket) {
+simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScope, socket,$ngBootbox) {
+  socket.on('roomReset', function (room) {
+  $rootScope.userScore = 0;
+  $rootScope.oppScore = 0;
+    alert("This game was reset by the server");
+      $state.go('gamePrepare',{});
+  });
+
     $scope.opponent = $rootScope.opponent;
     console.log($rootScope.opponent);
 
-      $rootScope.userScore = $scope.score;
-      $rootScope.oppScore = $scope.oppScore;
+      // $rootScope.userScore = $scope.score;
+      // $rootScope.oppScore = $scope.oppScore;
       $scope.score = $rootScope.userScore;
       $scope.OppScore = $rootScope.oppScore;
 
@@ -232,6 +260,23 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
     $scope.men.push(ship);
   };
 
+  $scope.randomShipPut = function(){
+    for (i = 0; i < $scope.men.length; i++) {
+      var sship = $scope.men[i];
+      if(Math.floor((Math.random() * 2) + 0)===0){
+        $scope.turnShip(sship);
+      }
+      var ii = Math.floor((Math.random() * $scope.maxSea) + 0);
+      var jj = Math.floor((Math.random() * $scope.maxSea) + 0);
+      while(!$scope.dropValidateSpace(sship,ii,jj)){
+        ii = Math.floor((Math.random() * $scope.maxSea) + 0);
+        jj = Math.floor((Math.random() * $scope.maxSea) + 0);
+      }
+      $scope.onDropPlace(null,sship,ii,jj);
+    }
+    $scope.men = [];
+  };
+
   $scope.submitButton = function(){
     if($scope.men.length>0||$scope.send == true){
       alert("Please put down all the ships");
@@ -262,11 +307,22 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
       console.log(datadata);
     });
   });
+
+  socket.on('disconnectNotice', function(){
+    $ngBootbox.alert('Your opponent quited.')
+      .then(function() {
+          // console.log('Alert closed');
+          $state.go('lobby',{});
+        socket.emit('restartGame');
+      });
+  });
 });
 
 
 simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, socket){
-
+    $scope.social = {
+      twitterLobby : "I love battleship."
+    };
     $scope.rooms = [];
 
 
@@ -288,7 +344,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
         });
     }
-    
+
     $scope.joinRoom = function (room) {
         console.log(room);
         var username = $scope.username;
@@ -307,6 +363,54 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
 
 });
 
+simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, socket,$window){
+
+    $scope.rooms = [];
+
+
+    socket.on('connected', function(c){
+        $scope.online = c.numUsers;
+        $scope.rooms = c.roomList;
+    })
+
+    socket.on('roomListUpdated', function (list) {
+        $scope.rooms = list;
+    })
+
+    socket.emit('registAdmin');
+
+    $scope.createRoom = function () {
+        var username = $scope.username;
+        // Guard against empty name
+        if (typeof username === 'undefined' || username.length <= 0)return;
+        socket.emit('createGameRoom', username);
+        socket.on('roomCreated', function (room) {
+            $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
+        });
+    }
+
+    $scope.resetRoom = function (room) {
+        // var username = $scope.username;
+        // // Guard against empty name
+        // if (typeof username === 'undefined' || username.length <= 0)return;
+        //
+        // socket.on('startGame',function(name){
+        //     $rootScope.opponent = name;
+        //     $rootScope.you = username;
+        //     $state.go('gamePrepare',{});
+        // });
+        //
+        // socket.emit("joinRoom", room, username);
+//Reset room here
+
+        socket.emit("resetRoom",room);
+    }
+    $scope.onExit = function() {
+      socket.emit('deRegistAdmin');
+    };
+
+   $window.onbeforeunload =  $scope.onExit;
+});
 
 
 simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBootbox) {

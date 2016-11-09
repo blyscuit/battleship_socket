@@ -44,16 +44,38 @@ io.on('connection',function(socket){
 
     gameModule.bindSocket(socket);
 
+    gameModule.bindAdmin(socket);
+
     socket.on('disconnect',function(){
-        io.emit('connected', { numUsers: --numConnections });
+        io.emit('connected', {
+          numUsers: --numConnections,
+          roomList: gameModule.getRoomList()
+        });
         gameModule.onDisconnect(socket);
     });
 
 
     io.on("createGameRoom", function (name) {
         console.log(name);
-    })
+    });
 
+
+    socket.on('registAdmin', function(){
+      console.log("admin's here");
+      io.emit('connected', {
+        numUsers: --numConnections,
+        roomList: gameModule.getRoomList()
+      });
+
+    });
+    socket.on('deRegistAdmin', function(){
+      console.log("admin's gone");
+      io.emit('connected', {
+        numUsers: ++numConnections,
+        roomList: gameModule.getRoomList()
+      });
+
+    });
 
 });
 
