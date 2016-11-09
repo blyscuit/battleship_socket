@@ -21,7 +21,7 @@ var BattleshipGameModule = function() {
     // map gameId to room
     var roomList = {};
     // map host to gameId (should use database but meh)
-    var hostGameMap = {};
+    var socketGameMap = {};
     var io;
 
     /**
@@ -61,10 +61,25 @@ var BattleshipGameModule = function() {
      * Remove a room from roomList
      * Do nothing if room not found or is undefined
      * Will notify client of roomList changes
-     * @param hostId - the room to be removed
+     * @param socketId - the room to be removed
      */
-    function removeRoom(hostId) {
-        delete roomList[hostGameMap[hostId]];
+    function removeRoom(socketId) {
+        var room = roomList[socketGameMap[socketId]];
+
+        if (typeof room === 'undefined') return;
+
+        var players = room.game.getPlayers();
+
+        delete roomList[socketGameMap[socketId]];
+
+        // force all user in the room to disconnect
+        for (var i = 0; i < players.length; i++) {
+            var socket = players[i].socket;
+            io.to(socket.id).emit('forceDisconnect');
+
+            delete socketGameMap[socket.id];
+        }
+
         notifyRoomListUpdated()
     }
 
@@ -91,10 +106,7 @@ var BattleshipGameModule = function() {
 
             // remove previous room created by this socket
             // just in case the socket somehow create multiple room
-            removeRoom(hostGameMap[socket.id]);
-
-            // update the hostId <-> gameId map
-            hostGameMap[socket.id] = gameId;
+            removeRoom(socketGameMap[socket.id]);
 
             // keep track of the new room
             roomList[gameId] = room;
@@ -108,6 +120,13 @@ var BattleshipGameModule = function() {
         socket.on('joinRoom', function (room, name) {
             // map client-side room doesn't contain the game object so we map it to server-side room
             var _room = roomList[room.gameId];
+
+            // if room is in progress, reject connection
+            if (_room.game.inProgress()) {
+                io.to(socket.id).emit('connectionRejected');
+                return;
+            }
+
             _room.game.join(socket, name);
 
             // since the each room always have the host
@@ -151,6 +170,12 @@ var BattleshipGameModule = function() {
             var playingPlayer = -1;
 
             var numberOfPlayerSubmittedPlan = 0;
+
+            var gameInProgress = false;
+
+            var getGameInprogress = function () {
+              return gameInProgress;
+            };
 
             /**
              *
@@ -238,6 +263,9 @@ var BattleshipGameModule = function() {
             var addPlayer = function (socket, name) {
                 socket.join(gameId);
 
+                // update the socket.id <-> gameId map
+                socketGameMap[socket.id] = gameId;
+
                 var player = {
                     socket: socket,
                     name: name,
@@ -259,6 +287,8 @@ var BattleshipGameModule = function() {
                 players.push(player);
                 console.log('added');
 
+                notifyRoomListUpdated();
+
             };
 
             var resetScore = function() {
@@ -273,6 +303,8 @@ var BattleshipGameModule = function() {
              * It reset the game state and start player's planning process
              */
             var restartGame = function() {
+
+                gameInProgress = true;
 
                 numberOfPlayerSubmittedPlan = 0;
 
@@ -486,6 +518,10 @@ var BattleshipGameModule = function() {
               io.sockets.in(gameId).emit('roomReset');
             };
 
+            var getPlayers = function () {
+                return players;
+            };
+
             /* ============================================================================== *
              Self-involved Functions (Init)
              * ============================================================================== */
@@ -498,7 +534,9 @@ var BattleshipGameModule = function() {
             return {
                 join: addPlayer,
                 start: restartGame,
-                reset: resetRoom
+                reset: resetRoom,
+                getPlayers: getPlayers,
+                inProgress: getGameInprogress
             };
 
         };

@@ -54,12 +54,6 @@ io.on('connection',function(socket){
         gameModule.onDisconnect(socket);
     });
 
-
-    io.on("createGameRoom", function (name) {
-        console.log(name);
-    });
-
-
     socket.on('registAdmin', function(){
       console.log("admin's here");
       io.emit('connected', {

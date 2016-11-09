@@ -331,7 +331,22 @@ simpleControllers.controller('GamePrepareCtrl', function($state,$scope,$rootScop
 });
 
 
-simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, socket){
+simpleControllers.controller('LobbyController', function($state,$scope, $rootScope, $ngBootbox, socket){
+
+    socket.on('connectionRejected', function () {
+        $ngBootbox.alert('Unable to join room, the game may already started')
+    });
+    
+    socket.on('forceDisconnect', function () {
+        $state.go('lobby');
+    });
+
+    $scope.heartClicked = false;
+
+    $scope.heartClick = function () {
+        $ngBootbox.alert('I love you too!')
+    };
+
     $scope.social = {
       twitterLobby : "I love battleship."
     };
@@ -349,18 +364,26 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
     $scope.createRoom = function () {
         var username = $scope.username;
         // Guard against empty name
-        if (typeof username === 'undefined' || username.length <= 0)return;
+        if (typeof username === 'undefined' || username.length <= 0){
+            $ngBootbox.alert('Please enter a name');
+            return;
+        }
+
+
         socket.emit('createGameRoom', username);
         socket.on('roomCreated', function (room) {
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
         });
-    }
+    };
 
     $scope.joinRoom = function (room) {
         console.log(room);
         var username = $scope.username;
         // Guard against empty name
-        if (typeof username === 'undefined' || username.length <= 0)return;
+        if (typeof username === 'undefined' || username.length <= 0){
+            $ngBootbox.alert('Please enter a name');
+            return;
+        }
 
         socket.on('startGame',function(name){
             $rootScope.opponent = name;
@@ -382,11 +405,11 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
     socket.on('connected', function(c){
         $scope.online = c.numUsers;
         $scope.rooms = c.roomList;
-    })
+    });
 
     socket.on('roomListUpdated', function (list) {
         $scope.rooms = list;
-    })
+    });
 
     socket.emit('registAdmin');
 
@@ -398,24 +421,11 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
         socket.on('roomCreated', function (room) {
             $state.go('gameWait',{ myParam:{username:room.hostName,online:$scope.online}});
         });
-    }
+    };
 
     $scope.resetRoom = function (room) {
-        // var username = $scope.username;
-        // // Guard against empty name
-        // if (typeof username === 'undefined' || username.length <= 0)return;
-        //
-        // socket.on('startGame',function(name){
-        //     $rootScope.opponent = name;
-        //     $rootScope.you = username;
-        //     $state.go('gamePrepare',{});
-        // });
-        //
-        // socket.emit("joinRoom", room, username);
-//Reset room here
-
         socket.emit("resetRoom",room);
-    }
+    };
     $scope.onExit = function() {
       socket.emit('deRegistAdmin');
     };
@@ -427,7 +437,7 @@ simpleControllers.controller('AdminCtrl', function($state,$scope, $rootScope, so
 simpleControllers.controller('LandingCtrl', function($state,$scope, socket,$ngBootbox) {
   socket.on('connected', function(connected){
     $scope.online = connected.numUsers;
-  })
+  });
 
 
 
