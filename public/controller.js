@@ -2,10 +2,8 @@ var simpleControllers = angular.module('simpleControllers', []);
 
 
 simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$rootScope, socket, $interval,$ngBootbox) {
-
-
-  $scope.youPercent = 50;
-  $scope.opponentPercent = 75;
+  $scope.youPercent = 100;
+  $scope.opponentPercent = 100;
   /*$scope.config1.circleColor = "#FF7777";
   $scope.config1.textColor = "#FF4444";
   $scope.config1.waveTextColor = "#FFAAAA";
@@ -76,6 +74,10 @@ simpleControllers.controller('GameCtrl', function($stateParams,$state,$scope,$ro
         if(ship<=5)
         $scope.sea[row][column] = {"length":ship+6,"name":ship+6};
     }
+  });
+  socket.on('life',function(myLife,oppoLife){
+    $scope.youPercent = Math.floor(myLife/16*100);
+    $scope.opponentPercent = Math.floor(oppoLife/16*100);
   });
   socket.on('gameOver',function(score,oppScore,didWin){
     $rootScope.userScore = score;
@@ -336,7 +338,7 @@ simpleControllers.controller('LobbyController', function($state,$scope, $rootSco
     socket.on('connectionRejected', function () {
         $ngBootbox.alert('Unable to join room, the game may already started')
     });
-    
+
     socket.on('forceDisconnect', function () {
         $state.go('lobby');
     });

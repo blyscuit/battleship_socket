@@ -446,7 +446,8 @@ var BattleshipGameModule = function() {
 
                     io.to(player.socket.id).emit('result', player.shots, player.score);
                     io.to(opponent.socket.id).emit('update map', player.shots,player.score);
-
+                    io.to(player.socket.id).emit('life',player.life,opponent.life);
+                    io.to(opponent.socket.id).emit('life',opponent.life,player.life);
                     if (opponent.life <= 0) {
                         // if opponent died
                         stopTimer();
